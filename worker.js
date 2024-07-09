@@ -23,6 +23,7 @@ self.addEventListener("message", function (event) {
       rgTable.createIndex("amount", "amount", { unique: false });
       rgTable.createIndex("byUser", "byUser", { unique: false });
       rgTable.createIndex("account", "account", { unique: false });
+      rgTable.createIndex("editable", "editable", { unique: false });
       rgTable.createIndex("added", "added", { unique: false });
       rgTable.createIndex("modified", "modified", { unique: false });
     }
@@ -52,7 +53,7 @@ self.addEventListener("message", function (event) {
 
   openRequest.onsuccess = function (event) {
     db = event.target.result;
-    console.log(action);
+
     switch (action) {
       case "addTransaction":
         addTransaction(db, data);
@@ -65,6 +66,11 @@ self.addEventListener("message", function (event) {
         break;
       case "getTransactions":
         getTransactions(db);
+        // getFTransactions(db, "2023-01-15", "2023-01-20");
+        break;
+      case "getFTransactions":
+        // getTransactions(db);
+        getFTransactions(db, data.from, data.to);
         break;
       case "addUser":
         addUser(db, data);
@@ -108,7 +114,6 @@ self.addEventListener("message", function (event) {
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
     };
-    console.log("transaction added " + JSON.stringify(transaction));
   }
 
   function updateTransaction(db, transaction) {
@@ -118,7 +123,6 @@ self.addEventListener("message", function (event) {
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
     };
-    console.log("transaction updated " + JSON.stringify(transaction));
   }
 
   function deleteTransaction(db, id) {
@@ -137,16 +141,91 @@ self.addEventListener("message", function (event) {
 
     request.onsuccess = function (event) {
       let transactions = event.target.result;
+      let ob = transactions[0];
+      let obd = ob.date;
+      transactions.shift();
+
       transactions.sort((a, b) => a.date > b.date);
+      transactions.unshift(ob);
+      transactions = transactions.filter(function (tr) {
+        return tr.date >= obd;
+      });
+
       transactions.map(function (i) {
         i.amount = i.amount / 1000;
         return i;
       });
       self.postMessage({
         action: "getTransactions",
-        data: event.target.result,
+        data: transactions,
       });
+      calcClosing();
     };
+    request.onerror = function (event) {};
+  }
+
+  function getFTransactions(db, startDate, endDate) {
+    const tx = db.transaction("register", "readonly");
+    const store = tx.objectStore("register");
+    const index = store.index("date");
+
+    let range;
+    let request;
+
+    if (startDate !== "" && endDate !== "") {
+      range = IDBKeyRange.bound(startDate, endDate, false, false);
+    } else if (startDate !== "") {
+      range = IDBKeyRange.lowerBound(startDate);
+    } else if (endDate !== "") {
+      range = IDBKeyRange.upperBound(endDate);
+    } else {
+      getTransactions(db);
+      return;
+    }
+
+    // Create a range for date strings
+
+    request = index.openCursor(range);
+    let transactions = []; // Collect transactions here
+
+    request.onsuccess = function (event) {
+      const cursor = event.target.result;
+      if (cursor) {
+        //
+        transactions.push(cursor.value); // Add current cursor value to transactions array
+        cursor.continue(); // Continue to the next cursor entry
+      } else {
+        // Process transactions after cursor iteration is complete
+
+        if (transactions.length > 0) {
+          let ob = transactions[0];
+          let obd = ob.date;
+
+          transactions.sort((a, b) => (a.date > b.date ? 1 : -1));
+          transactions = transactions.filter((tr) => tr.date >= obd);
+
+          transactions = transactions.map(function (i) {
+            i.amount = i.amount / 1000;
+            return i;
+          });
+
+          self.postMessage({
+            action: "getTransactions",
+            data: transactions,
+          });
+        } else {
+          self.postMessage({
+            action: "getTransactions",
+            data: [],
+          });
+        }
+      }
+    };
+
+    request.onerror = function (event) {
+      console.error("Request error: ", event.target.errorCode);
+    };
+    calcClosing();
   }
 
   function addUser(db, usr) {
@@ -156,18 +235,15 @@ self.addEventListener("message", function (event) {
     tx.oncomplete = function () {
       self.postMessage({ action: "userChanged" });
     };
-    console.log("user added " + JSON.stringify(usr));
   }
 
   function updateUser(db, usr) {
-    console.log("now updating user ", usr);
     const tx = db.transaction(user, "readwrite");
     const store = tx.objectStore(user);
     store.put(usr);
     tx.oncomplete = function () {
       self.postMessage({ action: "userChanged" });
     };
-    console.log("user updated " + JSON.stringify(usr));
   }
 
   function deleteUser(db, id) {
@@ -209,25 +285,65 @@ self.addEventListener("message", function (event) {
     });
   }
 
-  function addAccount(db, usr) {
+  function addAccount(db, a) {
     const tx = db.transaction(account, "readwrite");
     const store = tx.objectStore(account);
-    store.add(usr);
+    let acc = store.add(a);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
     };
-    console.log("account added " + JSON.stringify(account));
+    acc.onsuccess = function (event) {
+      const account = event.target.result;
+      const amount = a.openBal;
+      const date = a.openDate;
+      const user = a.users[0];
+      const added = new Date();
+      const modified = new Date();
+      const description = "Opening balance";
+
+      addTransaction(db, {
+        amount,
+        date,
+        account,
+        description,
+        editable: false,
+        user,
+        added,
+        modified,
+      });
+    };
   }
 
-  function updateAccount(db, usr) {
-    console.log("updating account " + usr);
+  function updateAccount(db, a) {
     const tx = db.transaction(account, "readwrite");
     const store = tx.objectStore(account);
-    store.put(usr);
+    let acc = store.put(a);
     tx.oncomplete = function () {
       self.postMessage({ action: "accountChanged" });
     };
-    console.log("account updated " + JSON.stringify(account));
+    tx.onerror = function (error) {};
+    acc.onsuccess = function (event) {
+      const id = 1;
+      const account = event.target.result;
+      const amount = a.openBal * 1000;
+      const date = a.openDate;
+      const byUser = a.users[0];
+      const added = new Date();
+      const modified = new Date();
+      const description = "Opening balance";
+
+      updateTransaction(db, {
+        id,
+        amount,
+        date,
+        account,
+        description,
+        editable: false,
+        byUser,
+        added,
+        modified,
+      });
+    };
   }
 
   function deleteAccount(db, id) {
@@ -250,7 +366,7 @@ self.addEventListener("message", function (event) {
         action: "updateAccounts",
         data: event.target.result,
       });
-      console.log(event.target.result.length);
+
       accCount = event.target.result.length;
       return accCount;
     };
@@ -277,8 +393,6 @@ self.addEventListener("message", function (event) {
     getUsersCount(db).then((c) => {
       if (c > 0) return;
       addUser(db, { name: "User 1", password: "" });
-      console.log("users count ", c);
-      console.log("adding Primary user");
     });
   }
 
@@ -291,11 +405,30 @@ self.addEventListener("message", function (event) {
         symbol: "$",
         openBal: 0,
         openDate: getFirstDateOfCurrentMonth(),
-        users: [],
+        users: [1],
         added: new Date(),
       });
-      console.log("adding primary cash");
     });
+  }
+
+  function calcClosing() {
+    let closing = 0;
+
+    const tx = db.transaction(register, "readonly");
+    const store = tx.objectStore(register);
+    const request = store.getAll();
+
+    request.onsuccess = function (event) {
+      let transactions = event.target.result;
+
+      closing =
+        transactions.reduce((p, c) => {
+          return p + c.amount;
+        }, 0) / 1000;
+
+      self.postMessage({ action: "updateClosing", data: { closing } });
+    };
+    request.onerror = function (event) {};
   }
 });
 

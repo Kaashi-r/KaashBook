@@ -1,12 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
   const worker = new Worker("worker.js");
 
+  // Get browser locale for formating amounts
   const userLocale = navigator.language || navigator.userLanguage;
   const formatter = new Intl.NumberFormat(userLocale, {
     style: "decimal",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+
+  let today = new Date();
+  let aWeekAgo = new Date();
+  aWeekAgo.setDate(today.getDate() - 7);
 
   const transactionForm = document.getElementById("entry-form");
   const typeInput = document.getElementById("type");
@@ -23,22 +28,41 @@ document.addEventListener("DOMContentLoaded", function () {
   const uNameInput = document.getElementById("user-name");
   const cashForm = document.getElementById("cash-form");
   const cNameInput = document.getElementById("cash-name");
+  const cName = document.getElementById("transaction-text");
   const cSymbolInput = document.getElementById("cash-symbol");
   const openBalInput = document.getElementById("open-bal");
   const openDateInput = document.getElementById("open-date");
   const editModal = document.getElementById("edit-modal");
   const editModalLabel = document.getElementById("edit-modal-label");
-  const mdlEditBtn = document.getElementById("modal-edit-btn");
-  const mdlDltBtn = document.getElementById("modal-delete-btn");
+  let mdlEditBtn = document.getElementById("modal-edit-btn");
+  let mdlDltBtn = document.getElementById("modal-delete-btn");
   const rcpt = document.getElementById("rcpt");
   const pymt = document.getElementById("pymt");
+  const fromDate = document.getElementById("from-date");
+  const toDate = document.getElementById("to-date");
+  const fromToForm = document.getElementById("from-to-form");
 
   let cBook = [];
-  let closingBalance = 0.0;
-
   let isUpdating = 0;
-  let updatingID = null;
 
+  const formatDate = (date) => {
+    if (!date) {
+      return ""; // Return an empty string if the date is invalid
+    }
+    try {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    } catch {
+      return date;
+    }
+  };
+
+  // Set the initial date to be Today's
+  dateInput.value = formatDate(new Date());
+
+  // Clears transaction table before reload on every transaction entry
   function clearTable() {
     // Clear existing transactions
     while (tBody.children.length > 0) {
@@ -46,40 +70,42 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function processTransactions(transactions) {
-    cBook = transactions;
-    // cBook.sort((a, b) => a.date > b.date);
-
-    // console.log("cbook is " + JSON.stringify(cBook));
-
-    closingBalance = formatter.format(
-      cBook.reduce((p, c) => {
-        // console.log("p is " + p);
-        return p + c.amount;
-      }, 0)
-    );
-    // console.log("closing is " + closingBalance);
-
-    renderTransactions();
-  }
+  fromDate.value = localStorage.getItem("from-date")
+    ? localStorage.getItem("from-date")
+    : formatDate(aWeekAgo);
+  toDate.value = localStorage.getItem("to-date")
+    ? localStorage.getItem("to-date")
+    : formatDate(today);
 
   // Function to render transactions
-  function renderTransactions() {
+  function renderTransactions(transactions) {
+    cBook = transactions;
     clearTable();
-    cBook.forEach(function (transaction) {
+    cBook.forEach(function (transaction, i) {
+      if (i === 0) {
+        localStorage.setItem("cash-id", transaction.id);
+      }
       addTransactionRow(
         transaction.amount,
         transaction.description,
         transaction.date,
-        transaction.id
+        transaction.id,
+        transaction.added,
+        transaction.editable
       );
     });
-    cBalance.innerHTML = closingBalance;
-    // console.log(JSON.stringify(cBook));
+  }
+
+  // Change closing balance
+  function changeClosing(closing) {
+    cBalance.innerHTML = formatter.format(closing);
+    closing < 0
+      ? (cBalance.classList = "col-3 text-end bg-danger text-light")
+      : (cBalance.classList = "col-3 text-end");
   }
 
   // Function to add a new row
-  function addTransactionRow(amount, description, date, id) {
+  function addTransactionRow(amount, description, date, id, added, editable) {
     const dateCell = document.createElement("td");
     dateCell.textContent = date;
     dateCell.classList.add("col-3");
@@ -104,35 +130,49 @@ document.addEventListener("DOMContentLoaded", function () {
     tRow.appendChild(amountCell);
     tBody.appendChild(tRow);
 
-    tRow.addEventListener("click", function () {
-      editModalLabel.innerText =
-        (amount < 0 ? "Payment" : "Receipt") +
-        " of " +
-        formatter.format(Math.abs(amount));
-      mdlEditBtn.addEventListener("click", function () {
-        updateForm(date, description, amount, id);
-      });
-      mdlDltBtn.addEventListener("click", function () {
-        worker.postMessage({ action: "deleteTransaction", data: { id: id } });
-        clearFields();
-      });
+    if (editable) {
+      tRow.addEventListener("click", function () {
+        const newMdlDltBtn = mdlDltBtn.cloneNode(true);
+        mdlDltBtn.parentNode.replaceChild(newMdlDltBtn, mdlDltBtn);
 
-      new bootstrap.Modal(editModal).show();
-    });
+        const newMdlEditBtn = mdlEditBtn.cloneNode(true);
+        mdlEditBtn.parentNode.replaceChild(newMdlEditBtn, mdlEditBtn);
 
-    // console.log("inserted");
+        editModalLabel.innerText =
+          (amount < 0 ? "Payment" : "Receipt") +
+          " of " +
+          formatter.format(Math.abs(amount));
+        newMdlEditBtn.addEventListener("click", function () {
+          updateForm(date, description, amount, id);
+          localStorage.setItem("entry-added", added);
+        });
+        newMdlDltBtn.addEventListener("click", function () {
+          worker.postMessage({ action: "deleteTransaction", data: { id: id } });
+          clearFields();
+        });
+
+        mdlDltBtn = newMdlDltBtn;
+        mdlEditBtn = newMdlEditBtn;
+
+        new bootstrap.Modal(editModal).show();
+      });
+    }
   }
 
   // // Initial render
-  worker.postMessage({ action: "getTransactions" });
+  // worker.postMessage({ action: "getTransactions" });
+  worker.postMessage({
+    action: "getFTransactions",
+    data: { from: fromDate.value, to: toDate.value },
+  });
   worker.postMessage({ action: "addPrimary" });
 
   // Listen for messages from the worker
   worker.onmessage = function (event) {
     const { action, data } = event.data;
-    console.log(data);
+
     if (action === "getTransactions") {
-      processTransactions(data);
+      renderTransactions(data);
     } else if (action === "refresh") {
       worker.postMessage({ action: "getTransactions" });
     } else if (action === "userChanged") {
@@ -143,10 +183,112 @@ document.addEventListener("DOMContentLoaded", function () {
       worker.postMessage({ action: "getAccounts" });
     } else if (action === "updateAccounts") {
       updateCashForm(data[0]);
+    } else if (action === "updateClosing") {
+      changeClosing(data.closing);
     }
   };
+  // Update transaction for on editing transaction
+  function updateForm(date, description, amount, id) {
+    let ttype = amount < 0 ? "payment" : "receipt";
+    amount = amount < 0 ? -amount : amount;
+    amountInput.value = amount;
+    descriptionInput.value = description;
+    dateInput.value = date;
+    for (const radioButton of typeRadio) {
+      if (radioButton.value === ttype) {
+        radioButton.checked = true;
+      } else {
+        radioButton.checked = false;
+      }
+    }
+    isUpdating = true;
+    transactionForm.setAttribute("data-id", id);
+    submitBtn.innerText = "Update transaction";
+  }
 
-  // Form submission handler
+  // temporary function for single user entry form
+  function updateUserForm(data) {
+    uNameInput.value = data.name;
+    userForm.setAttribute("data-user-id", data.id);
+    userBtn.innerText = data.name;
+    localStorage.setItem("user-id", data.id);
+  }
+
+  // temporary function for single cash entry form
+  function updateCashForm(data) {
+    cNameInput.value = data.name;
+    cSymbolInput.value = data.symbol;
+    openBalInput.value = data.openBal;
+    openDateInput.value = data.openDate;
+    cashForm.setAttribute("data-cash-id", data.id);
+    cashBtn.textContent = data.name;
+    cName.textContent = data.name + " Transactions";
+    localStorage.setItem("cash-id", data.id);
+    localStorage.setItem("decimal", data.decimals);
+    localStorage.setItem("enrty-added", data.added);
+    date.setAttribute("min", data.openDate);
+    fromDate.setAttribute("min", data.openDate);
+    toDate.setAttribute("min", data.openDate);
+  }
+
+  // update cash in database
+  function updateCash() {
+    worker.postMessage({
+      action: "updateAccount",
+      data: {
+        name: cNameInput.value,
+        symbol: cSymbolInput.value,
+        openBal: openBalInput.value,
+        openDate: formatDate(openDateInput.value),
+        id: Number.parseInt(cashForm.getAttribute("data-cash-id")),
+        decimals: 3,
+        users: [],
+        added: new Date(),
+      },
+    });
+  }
+
+  // update User in database
+  function updateUser() {
+    worker.postMessage({
+      action: "updateUser",
+      data: {
+        name: uNameInput.value,
+        id: Number.parseInt(userForm.getAttribute("data-user-id")),
+        password: "",
+      },
+    });
+  }
+
+  // Clear transacion form
+  function clearFields() {
+    amountInput.value = "";
+    descriptionInput.value = "";
+    transactionForm.setAttribute("data-id", "");
+    isUpdating = false;
+    submitBtn.innerText = "Add transaction";
+  }
+
+  // Cash form submission handler
+  cashForm.addEventListener("submit", updateCash);
+
+  // User form submission handler
+  userForm.addEventListener("submit", updateUser);
+
+  fromToForm.addEventListener("change", function (event) {
+    let frDate = formatDate(fromDate.value);
+    let tDate = formatDate(toDate.value);
+
+    localStorage.setItem("from-date", frDate);
+    localStorage.setItem("to-date", tDate);
+
+    worker.postMessage({
+      action: "getFTransactions",
+      data: { from: frDate, to: tDate },
+    });
+  });
+
+  // Transaction form submission handler
   transactionForm.addEventListener("submit", function (event) {
     event.preventDefault();
     let type;
@@ -156,11 +298,10 @@ document.addEventListener("DOMContentLoaded", function () {
     for (const radioButton of typeRadio) {
       if (radioButton.checked) {
         type = radioButton.value;
-        console.log("type is " + type);
+
         break;
       }
     }
-    console.log(type);
 
     const amount = parseFloat(amountInput.value) * 1000;
     const description = descriptionInput.value.trim();
@@ -185,7 +326,9 @@ document.addEventListener("DOMContentLoaded", function () {
           description,
           date,
           editable,
-          added,
+          byUser: localStorage.getItem("user-id"),
+          account: localStorage.getItem("cash-id"),
+          added: localStorage.getItem("entry-added"),
           modified,
         },
       });
@@ -199,103 +342,28 @@ document.addEventListener("DOMContentLoaded", function () {
           description,
           date,
           editable,
+          byUser: localStorage.getItem("user-id"),
+          account: localStorage.getItem("cash-id"),
           added,
           modified,
         },
       });
     }
 
-    console.log(type.concat(transactionAmount, description, date));
-
     clearFields();
     dateInput.value = date;
     descriptionInput.focus();
   });
 
+  // Transaction form reset handler
   transactionForm.addEventListener("reset", function (event) {
     transactionForm.setAttribute("data-id", "");
     submitBtn.innerText = "Add transaction";
     dateInput.focus();
   });
 
-  function updateForm(date, description, amount, id) {
-    let ttype = amount < 0 ? "payment" : "receipt";
-    amount = amount < 0 ? -amount : amount;
-    amountInput.value = amount;
-    descriptionInput.value = description;
-    dateInput.value = date;
-    for (const radioButton of typeRadio) {
-      if (radioButton.value === ttype) {
-        radioButton.checked = true;
-      } else {
-        radioButton.checked = false;
-      }
-    }
-    isUpdating = true;
-    transactionForm.setAttribute("data-id", id);
-    submitBtn.innerText = "Update transaction";
-  }
-  // temporary function for single user
-  function updateUserForm(data) {
-    uNameInput.value = data.name;
-    userForm.setAttribute("data-user-id", data.id);
-    userBtn.innerText = data.name;
-    localStorage.setItem("user-id", data.id);
-  }
-  // temporary function for single cash
-  function updateCashForm(data) {
-    cNameInput.value = data.name;
-    cSymbolInput.value = data.symbol;
-    openBalInput.value = data.openBal;
-    openDateInput.value = data.openDate;
-    cashForm.setAttribute("data-cash-id", data.id);
-    cashBtn.textContent = data.name;
-    localStorage.setItem("cash-id", data.id);
-    localStorage.setItem("decimal", data.decimals);
-  }
-
-  function updateCash() {
-    console.log("updatingCash");
-    worker.postMessage({
-      action: "updateAccount",
-      data: {
-        name: cNameInput.value,
-        symbol: cSymbolInput.value,
-        openBal: openBalInput.value,
-        openDate: openDateInput.value,
-        id: Number.parseInt(cashForm.getAttribute("data-cash-id")),
-        decimals: 3,
-        users: [],
-        added: new Date(),
-      },
-    });
-  }
-  function updateUser() {
-    console.log("updating user");
-    worker.postMessage({
-      action: "updateUser",
-      data: {
-        name: uNameInput.value,
-        id: Number.parseInt(userForm.getAttribute("data-user-id")),
-        password: "",
-      },
-    });
-  }
-
-  function clearFields() {
-    amountInput.value = "";
-    descriptionInput.value = "";
-    transactionForm.setAttribute("data-id", "");
-    isUpdating = false;
-    submitBtn.innerText = "Add transaction";
-  }
-
-  cashForm.addEventListener("submit", updateCash);
-
-  userForm.addEventListener("submit", updateUser);
-
+  // Keyboard shortcut to toggle between Receipt and Payment
   document.addEventListener("keydown", function (event) {
-    // Check if the Ctrl, Shift, and 'Z' keys are pressed
     if (event.ctrlKey && event.shiftKey && event.key === "+") {
       event.preventDefault(); // Prevent the default action
       let xx = pymt.checked;
@@ -304,6 +372,32 @@ document.addEventListener("DOMContentLoaded", function () {
       rcpt.checked = xx;
     }
   });
+  // Keyboard shortcut to increase date if dateInput is selected
+  dateInput.addEventListener("keydown", function (event) {
+    if (event.key === "+") {
+      changeDate(1);
+    } else if (event.key === "-") {
+      changeDate(-1);
+    }
+  });
+
+  // change the datepicker day
+  function changeDate(days) {
+    const currentDate = new Date(dateInput.value);
+    if (!isNaN(currentDate)) {
+      currentDate.setDate(currentDate.getDate() + days);
+      dateInput.value = currentDate.toISOString().split("T")[0];
+    }
+  }
+
+  console.log(
+    "%c Ⓚ Welcome to the KaashBook Extension! Ⓚ",
+    "color: lightgreen; font-size: 16px; font-weight: bold;"
+  );
+  console.log(
+    "%cTracking your transactions has never been easier, within your web browser, where you do everything else!",
+    "color: lightblue; font-size: 14px;"
+  );
 });
 
 // scroll up table
@@ -316,16 +410,14 @@ document.addEventListener("DOMContentLoaded", function () {
   function generateRandomTransactions() {
     // Array to store the generated transactions
     let transactions = [];
-
     // Function to generate a random date within a range
     function randomDate(start, end) {
       return new Date(
         start.getTime() + Math.random() * (end.getTime() - start.getTime())
       );
     }
-
     // Generate 100 random transactions
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
       // Random date within a range (adjust as needed)
       let startDate = new Date(2023, 0, 1); // January 1, 2023
       let endDate = new Date(); // Today's date
@@ -333,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Random description and amount
       let randomDescription = `Transaction ${i + 1}`;
-      let randomAmount = (Math.random() * 1000).toFixed(2); // Random amount between 0 and 999.99
+      let randomAmount = (Math.random() * 1000).toFixed(2) * 1000; // Random amount between 0 and 999.99
 
       // Construct transaction object
       let transaction = {
@@ -354,6 +446,8 @@ document.addEventListener("DOMContentLoaded", function () {
           editable: transaction.editable,
           added: transaction.added,
           modified: transaction.modified,
+          account: 1,
+          byUser: 1,
         },
       });
 
@@ -366,8 +460,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Example usage:
+
+  // for (let i = 0; i < 100; i++) {
+  //   generateRandomTransactions();
+  // }
+
   // let randomTransactions = generateRandomTransactions();
-  // console.log(randomTransactions);
+  //
 });
 
 function toggleClass(id, cls) {

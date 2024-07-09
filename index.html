@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cashbook</title>
+    <title>KaashBook</title>
+    <link rel="icon" href="./icons/KaashBook-Logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animation.css" />
     <link rel="stylesheet" href="css/fontello.css" />
@@ -12,86 +13,95 @@
 </head>
 
 <body>
-    <div class="container">
-        <div id="entry-half">
-            <div id="form-container">
+    <div class="container p-0">
+        <div id="nav-bar" class="mb-1 py-1">
+            <div class="row justify-content-between">
+                <div class="col-8 text-start">
+                    <img class="img-fluid p-1 m-1" src="icons/KaashBook-Banner.png" alt="KaashBook Logo"
+                        style="max-height: 40px;">
+                </div>
+                <div class="col-4 text-end">
+                    <button class="btn mx-2 my-1 text-light" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#nav-expand" aria-expanded="false" aria-controls="nav-expand" id="nav-btn">
+                        <i class="icon-menu"></i>
+                    </button>
 
-                <div class="card my-1 bg-light">
-                    <div>
-                        <button class="btn btn-light m-1 p-1" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#cash-master" aria-expanded="false" aria-controls="cash-master"
-                            id="cash-collapse-btn" onclick="toggleClass('cash-collapse-btn','active');">
-                            <h2 class="m-0" id="the-cash">Cashbook</h2>
-                        </button>
-                    </div>
+                </div>
+            </div>
+            <div class="collapse" id="nav-expand">
+                <hr class="p-0 m-1 text-light">
+                <div class="d-grid gap-2">
+                    <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#cash-master" aria-expanded="false" aria-controls="cash-master"
+                        id="cash-collapse-btn">
+                        <h5 class="m-0 d-inline" id="the-cash">Cashbook</h5> <i class="icon-pencil d-inline"></i>
+                    </button>
+                </div>
+                <div id="cash-master" class="collapse p-1 pt-0 mt-1 mx-1">
 
-                    <div id="cash-master" class="collapse p-1 pt-0">
-
-                        <form id="cash-form" data-cash-id="" onsubmit="return false">
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Name :</span>
-                                <input class="form-control" type="text" id="cash-name" placeholder="Petty cash"
-                                    required />
-                            </div>
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Symbol :</span>
-                                <input class="form-control" type="text" id="cash-symbol" required />
-                            </div>
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Opening Date :</span>
-                                <input class="form-control" type="date" id="open-date" required />
-                            </div>
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Opening Balance :</span>
-                                <input class="form-control" id="open-bal" type="number" id="amount"
-                                    placeholder="Enter amount" min="0" step="0.01" required />
-                            </div>
-                            <div class="button-group">
-                                <span>
-                                    <button type="submit" id="cash-btn" class="btn btn-primary mr-1"
-                                        onclick="toggleClass('cash-master','show');">
-                                        Update Cash
-                                    </button>
-                                </span>
-                            </div>
-                        </form>
-
-                    </div>
-                    <hr class="mx-2 my-1">
-                    <div>
-                        <div class="btn-group">
-                            <button class="btn btn-light m-1 p-1" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#user-master" aria-expanded="false" aria-controls="user-master"
-                                id="user-collapse-btn" onclick="toggleClass('user-collapse-btn','active')">
-                                <h6 class="m-0" id="the-user">User</h6>
-                            </button>
-
+                    <form id="cash-form" data-cash-id="" onsubmit="return false">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Name :</span>
+                            <input class="form-control" type="text" id="cash-name" placeholder="Petty cash" required />
                         </div>
-                    </div>
-                    <div id="user-master" class="collapse px-1">
-                        <form id="user-form" data-user-id="" onsubmit="return false">
-                            <div class="input-group mb-1">
-                                <span class="input-group-text">Name :</span>
-                                <input class="form-control" type="text" id="user-name" placeholder="Your name"
-                                    required />
-                            </div>
-                            <div class="button-group mb-1">
-                                <span>
-                                    <button type="submit" id="user-btn" class="btn btn-primary mr-1"
-                                        onclick="toggleClass('user-master','show');">
-                                        Update User
-                                    </button>
-                                </span>
-                            </div>
-                        </form>
+                        <div class="input-group mb-1 d-none">
+                            <span class="input-group-text">Symbol :</span>
+                            <input class="form-control" type="text" id="cash-symbol" required />
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Date :</span>
+                            <input class="form-control" type="date" id="open-date" required />
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Balance :</span>
+                            <input class="form-control" id="open-bal" type="number" id="amount"
+                                placeholder="Enter amount" min="0" step="0.01" required />
+                        </div>
+                        <div class="button-group">
+                            <span>
+                                <button type="submit" id="cash-btn" class="btn btn-primary mr-1"
+                                    onclick="toggleClass('cash-master','show');">
+                                    Update Cash
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+
+                </div>
+                <hr class="p-0 m-1 text-light">
+                <div>
+                    <div class="d-grid gap-2">
+                        <button class="btn mx-2 p-1 text-start text-light" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#user-master" aria-expanded="false" aria-controls="user-master"
+                            id="user-collapse-btn">
+                            <h6 class="m-0  d-inline" id="the-user">User</h6> <i class="icon-pencil d-inline"></i>
+                        </button>
+
                     </div>
                 </div>
-
-                <div class="card p-1 mb-1">
+                <div id="user-master" class="collapse px-1 mt-1 mx-1">
+                    <form id="user-form" data-user-id="" onsubmit="return false">
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Name :</span>
+                            <input class="form-control" type="text" id="user-name" placeholder="Your name" required />
+                        </div>
+                        <div class="button-group mb-1">
+                            <span>
+                                <button type="submit" id="user-btn" class="btn btn-primary mr-1"
+                                    onclick="toggleClass('user-master','show');">
+                                    Update User
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="entry-half">
+            <div id="form-container">
+                <div class="card p-1 mb-1 mx-1">
                     <form id="entry-form" data-id="" onsubmit="return false">
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
-
-
                         <div class="card mb-1 border-0 col-6">
                             <div id="types-group" class="btn-group" role="group">
                                 <input type="radio" class="btn-check mr-1" name="types" id="rcpt" value="receipt"
@@ -101,10 +111,9 @@
                                 <label class="btn btn-outline-danger" for="pymt">Payment</label>
                             </div>
                         </div>
-
                         <div class="input-group mb-1">
                             <span class="input-group-text">Date :</span>
-                            <input class="form-control" type="date" id="date" required autofocus />
+                            <input class="form-control" type="date" id="date" min="1970-01-01" autofocus />
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Description : </span>
@@ -133,6 +142,20 @@
             </div>
         </div>
         <div id="table-half">
+            <div class="card text-center mb-1 mx-1">
+                <h5 id="transaction-text" class="fw-bold mx-1 mb-0">Transactions</h5>
+                <form id="from-to-form" onsubmit="return false" class="d-inline-flex">
+                    <div class="input-group m-1">
+                        <span class="input-group-text">From :</span>
+                        <input class="form-control p-0" type="date" id="from-date" required />
+                    </div>
+                    <div class="input-group m-1">
+                        <span class="input-group-text">To :</span>
+                        <input class="form-control p-0" type="date" id="to-date" required />
+                    </div>
+                </form>
+            </div>
+
             <div class="header-div">
                 <table class="table table-bordered m-0">
                     <thead>
@@ -153,16 +176,15 @@
             <div class="footer-div">
                 <table class="table table-bordered m-0">
                     <tfoot>
-                        <tr>
-                            <td class="col-3"></td>
-                            <td class="col-6 text-end">Closing Balance</td>
-                            <td class="col-3 text-end" id="closing-balance">####</td>
+                        <tr id="closing-row">
+                            <td class="col-9 text-end">Closing Balance
+                            </td>
+                            <td class="col-3 text-end bg-danger" id="closing-balance">0.00</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
-
         <!-- Edit Modal -->
         <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -185,13 +207,9 @@
                 </div>
             </div>
         </div>
-
-
-
     </div>
     <script src="script.js"></script>
     <script src="bootstrap/popper.min.js"></script>
-
     <script src="bootstrap/bootstrap.min.js"></script>
     <script></script>
 </body>

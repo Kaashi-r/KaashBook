@@ -1,5 +1,14 @@
+@font-face {
+  font-family: "NotoSans";
+  src: url("../font/NotoSans-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body,
 html {
+  /* font-family: "NotoSans", sans-serif !important;
+  font-size: 12px !important; */
   height: 100%;
   margin: 0;
 }
@@ -8,6 +17,13 @@ html {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+#nav-bar {
+  background-image: linear-gradient(
+    to bottom right,
+    rgb(8, 0, 0),
+    rgb(0, 72, 173)
+  );
 }
 
 .icon-trash-empty,
