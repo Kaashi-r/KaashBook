@@ -1,0 +1,248 @@
+body,
+html {
+  height: 100%;
+  margin: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header-div {
+  background-color: red;
+  /* flex: 0 0 50px; */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#table-half {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.footer-div {
+  background-color: red;
+  /* flex: 0 0 50px; */
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+#transactions-div {
+  flex: 1;
+  overflow-y: scroll;
+  /* display: flex; */
+
+  /* flex-direction: column-reverse; */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  border: 1px solid black;
+}
+
+#entry-half {
+  background-color: violet;
+  flex: 0 0 40%;
+}
+
+/*  */
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.icon-trash-empty,
+.icon-pencil {
+  color: white;
+  cursor: pointer;
+  height: 15px;
+  margin-right: 5px;
+}
+
+/*give some space between thead and tfoot*/
+
+#types-radio {
+  font-family: sans-serif;
+
+  margin: 0;
+  padding: 1em;
+  list-style-type: none;
+
+  li {
+    float: left;
+    margin: 2px;
+  }
+
+  label {
+    padding: 2px;
+    text-align: center;
+    color: #ccc;
+    border: solid 2px #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+  }
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  input[type="radio"]:checked + label {
+    border-color: #33cc33;
+    color: #33cc33;
+  }
+}
+
+.form-input {
+  margin: 5px;
+}
+
+:root {
+  --input-color: #99a3ba;
+  --input-border: #cdd9ed;
+  --input-background: #fff;
+  --input-placeholder: #cbd1dc;
+
+  --input-border-focus: #275efe;
+
+  --group-color: var(--input-color);
+  --group-border: var(--input-border);
+  --group-background: #eef4ff;
+
+  --group-color-focus: #fff;
+  --group-border-focus: var(--input-border-focus);
+  --group-background-focus: #678efe;
+}
+
+.form-field {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  line-height: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  border-radius: 6px;
+  color: var(--input-color);
+  border: 1px solid var(--input-border);
+  background: var(--input-background);
+  transition: border 0.3s ease;
+  &::placeholder {
+    color: var(--input-placeholder);
+  }
+  &:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+  }
+}
+
+.form-group {
+  max-width: 100%;
+  position: relative;
+  display: flex;
+  margin: 5px;
+  & > label,
+  .form-field {
+    white-space: nowrap;
+    display: block;
+    &:not(:first-child):not(:last-child) {
+      border-radius: 0;
+    }
+    &:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+    &:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+    &:not(:first-child) {
+      margin-left: -1px;
+    }
+  }
+  .form-field {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    width: 1%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  & > label {
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 25px;
+    color: var(--group-color);
+    background: var(--group-background);
+    border: 1px solid var(--group-border);
+    transition: background 0.3s ease, border 0.3s ease, color 0.3s ease;
+  }
+  &:focus-within {
+    & > label {
+      color: var(--group-color-focus);
+      background: var(--group-background-focus);
+      border-color: var(--group-border-focus);
+    }
+  }
+}
+
+.button-group {
+  margin: 5px;
+  display: flex;
+}
+.button-group > span {
+  flex-grow: 1;
+  margin: 2px;
+}
+.button-group > span > button {
+  width: 100%;
+}
+
+#table-half,
+#entry-half {
+  max-width: 600px;
+}
+
+#form-container {
+  margin: auto;
+  width: 100%;
+}
+#table-half {
+  overflow-x: auto;
+}
+
+#entry-form {
+  margin: 2px;
+}
+.col-1,
+.col-3 {
+  width: 25%;
+}
+.col-2 {
+  width: 40%;
+}
+.col-3 {
+  text-align: right;
+}
+
+.col-4 {
+  width: 10%;
+}
