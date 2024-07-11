@@ -43,4 +43,4 @@ For questions or support, please [open an issue](https://github.com/your-usernam
 
 ---
 
-© 2024 Your Name
+© 2024 Kaashier

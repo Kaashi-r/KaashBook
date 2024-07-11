@@ -398,6 +398,14 @@ document.addEventListener("DOMContentLoaded", function () {
     "%cTracking your transactions has never been easier, within your web browser, where you do everything else!",
     "color: lightblue; font-size: 14px;"
   );
+
+  document.getElementById("cash-btn").addEventListener("click", function () {
+    toggleClass("cash-master", "show");
+  });
+
+  document.getElementById("user-btn").addEventListener("click", function () {
+    toggleClass("user-master", "show");
+  });
 });
 
 // scroll up table
