@@ -16,6 +16,9 @@ html {
     rgb(0, 72, 173)
   );
 }
+#nav-btn {
+  font-size: 1.5rem;
+}
 
 .icon-trash-empty,
 .icon-pencil {
@@ -57,4 +60,8 @@ html {
 #types-group > :nth-child(4) {
   border-top-right-radius: var(--bs-border-radius);
   border-bottom-right-radius: var(--bs-border-radius);
+}
+
+#xl-btn {
+  color: #1d6f42;
 }

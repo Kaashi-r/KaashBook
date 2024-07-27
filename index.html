@@ -15,7 +15,7 @@
 
 <body>
     <div class="container p-0">
-        <div id="nav-bar" class="mb-1 py-1">
+        <div id="nav-bar" class="mb-1 py-1 shadow-sm">
             <div class="row justify-content-between">
                 <div class="col-8 text-start">
                     <img class="img-fluid p-1 m-1" src="icons/KaashBook-Banner.png" alt="KaashBook Logo"
@@ -109,10 +109,9 @@
                     </form>
                 </div>
             </div>
-        </div>
-        <div id="entry-half">
+
             <div id="form-container">
-                <div class="card p-1 mb-1 mx-1">
+                <div class="card p-1 mb-1 mx-1 shadow-sm">
                     <form id="entry-form" data-id="" onsubmit="return false" class="needs-validation" novalidate>
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
                         <div class="card mb-1 border-0 col-6">
@@ -167,8 +166,17 @@
             </div>
         </div>
         <div id="table-half">
-            <div class="card text-center mb-1 mx-1">
-                <h5 id="transaction-text" class="fw-bold mx-1 mb-0">Transactions</h5>
+            <div class="card text-center mb-1 mx-1 shadow-sm">
+                <div class="justify-content-between d-inline-flex">
+                    <div>
+                        <h5 id="transaction-text" class="fw-bold mx-2 my-1">Transactions</h5>
+                    </div>
+                    <div>
+                        <button class="btn p-1 shadow-sm m-1" id="xl-btn"><i class="icon-table"></i></button>
+                    </div>
+                </div>
+
+
                 <form id="from-to-form" onsubmit="return false" class="d-inline-flex">
                     <div class="input-group m-1">
                         <span class="input-group-text">From :</span>
@@ -233,9 +241,10 @@
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="js/xlsx.mini.min.js"></script>
     <script src="bootstrap/popper.min.js"></script>
     <script src="bootstrap/bootstrap.min.js"></script>
+    <script src="js/script.js"></script>
     <script></script>
 </body>
 

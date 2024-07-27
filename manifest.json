@@ -5,7 +5,7 @@
   "description": "A simple offline cashbook extension to keep your daily transactions, within your browser!.",
   "permissions": ["storage", "tabs", "unlimitedStorage"],
   "background": {
-    "scripts": ["worker.js", "background.js"],
+    "scripts": ["js/worker.js", "js/background.js"],
     "persistent": false
   },
   "sidebar_action": {
@@ -16,7 +16,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["script.js"]
+      "js": ["js/script.js"]
     }
   ],
   "browser_action": {
@@ -29,6 +29,6 @@
     "48": "icons/KaashBook-Logo.png"
   },
 
-  "web_accessible_resources": ["worker.js"],
+  "web_accessible_resources": ["js/worker.js"],
   "content_security_policy": "script-src 'self'; object-src 'self'"
 }

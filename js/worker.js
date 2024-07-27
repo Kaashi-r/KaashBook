@@ -100,6 +100,9 @@ self.addEventListener("message", function (event) {
         addPrimaryUser(db);
         addPrimaryCash(db);
         break;
+      case "getTransactionsXL":
+        getTransactionsXL(db);
+        break;
     }
   };
 
@@ -427,6 +430,60 @@ self.addEventListener("message", function (event) {
         }, 0) / 1000;
 
       self.postMessage({ action: "updateClosing", data: { closing } });
+    };
+    request.onerror = function (event) {};
+  }
+
+  function getTransactionsXL(db) {
+    const tx = db.transaction(register, "readonly");
+    const store = tx.objectStore(register);
+    const request = store.getAll();
+
+    request.onsuccess = function (event) {
+      let transactions = event.target.result;
+      let ob = transactions[0];
+
+      transactions.shift();
+
+      transactions.sort((a, b) => a.date > b.date);
+      transactions.unshift(ob);
+
+      transactions.map(function (i) {
+        i.amount = i.amount / 1000;
+        return i;
+      });
+
+      let trans = [];
+
+      transactions.map((obj, index) => {
+        let newObj = {};
+
+        let da = obj["date"];
+        let de = obj["description"];
+        let am = obj["amount"];
+        let re = am >= 0 ? am : "";
+        let pa = am < 0 ? -am : "";
+
+        newObj["Date"] = da;
+        newObj["Details"] = de;
+        newObj["Receipt"] = re;
+        newObj["Payment"] = pa;
+
+        trans.push(newObj);
+      });
+
+      let tr = trans.map((row, index) => {
+        row["Balance"] =
+          index === 0
+            ? { f: `C${index + 2}-D${index + 2}` }
+            : { f: `C${index + 2}-D${index + 2}+E${index + 1}` }; // Add Excel formula for running balance
+        return row;
+      });
+
+      self.postMessage({
+        action: "exportXL",
+        data: tr,
+      });
     };
     request.onerror = function (event) {};
   }

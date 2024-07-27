@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const worker = new Worker("worker.js");
+  const worker = new Worker("js/worker.js");
 
   // Get browser locale for formating amounts
   const userLocale = navigator.language || navigator.userLanguage;
@@ -186,6 +186,8 @@ document.addEventListener("DOMContentLoaded", function () {
       updateCashForm(data[0]);
     } else if (action === "updateClosing") {
       changeClosing(data.closing);
+    } else if (action === "exportXL") {
+      exportXL(data);
     }
   };
   // Update transaction for on editing transaction
@@ -402,7 +404,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     updateUser();
 
-    toggleClass("user-master", "show");
+    const bsCollapse = new bootstrap.Collapse(
+      document.getElementById("user-master"),
+      {
+        toggle: false,
+      }
+    ).hide();
   });
 
   cashForm.addEventListener("submit", function (event) {
@@ -412,14 +419,58 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     updateCash();
-    toggleClass("cash-master", "show");
+    const bsCollapse = new bootstrap.Collapse(
+      document.getElementById("cash-master"),
+      {
+        toggle: false,
+      }
+    ).hide();
   });
+
+  document.getElementById("xl-btn").addEventListener("click", () => {
+    worker.postMessage({ action: "getTransactionsXL" });
+  });
+
+  function exportXL(data) {
+    // Convert the data to a worksheet
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // Generate XLSX file and trigger download
+    XLSX.writeFile(workbook, `KaashBook ${cName.textContent}.xlsx`);
+  }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  unCollapse("nav-expand", '[data-bs-target="#nav-expand"]');
+});
+
+function unCollapse(collapse, btn) {
+  const collapseElement = document.getElementById(collapse);
+  const button = document.querySelector(btn);
+
+  // Handle clicks outside the collapse element
+  document.addEventListener("click", function (event) {
+    const isClickInside =
+      collapseElement.contains(event.target) || button.contains(event.target);
+
+    if (!isClickInside && collapseElement.classList.contains("show")) {
+      // Collapse the element if it's currently shown
+      const bsCollapse = new bootstrap.Collapse(collapseElement, {
+        toggle: false,
+      });
+      bsCollapse.hide();
+    }
+  });
+}
 
 (() => {
   "use strict";
 
-  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  // Fetch all the forms to apply custom Bootstrap validation styles to
   const forms = document.querySelectorAll(".needs-validation");
 
   // Loop over them and prevent submission
@@ -438,10 +489,3 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   });
 })();
-
-function toggleClass(id, cls) {
-  let btn = document.getElementById(id);
-  btn.classList.contains(cls)
-    ? btn.classList.remove(cls)
-    : btn.classList.add(cls);
-}
