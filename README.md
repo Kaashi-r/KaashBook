@@ -7,7 +7,7 @@ A simple offline cashbook extension to keep your daily transactions, within your
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/cashbook-extension.git
+   git clone https://github.com/Kaashi-r/KaashBook.git
    ```
 
 2. Navigate to the project directory.
@@ -20,6 +20,7 @@ A simple offline cashbook extension to keep your daily transactions, within your
 - View and manage transactions in the transaction table section.
 - Delete or modify each transaction after clicking on the entry.
 - Created in a way to support multiple users and cash accounts. Not implemented yet.
+- Export transactions to .xlsx format.
 
 ## License
 
@@ -39,7 +40,7 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ## Support
 
-For questions or support, please [open an issue](https://github.com/your-username/cashbook-extension/issues/new).
+For questions or support, please [open an issue](https://github.com/Kaashi-r/KaashBook.git/issues/new).
 
 ---
 
