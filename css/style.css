@@ -49,3 +49,12 @@ html {
 
   /* flex-direction: column-reverse; */
 }
+
+.input-group:not(.has-validation)
+  > .form-control:not(:last-child):not(.dropdown-toggle):not(
+    .dropdown-menu
+  ):not(.form-floating:not(:first-child)),
+#types-group > :nth-child(4) {
+  border-top-right-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+}

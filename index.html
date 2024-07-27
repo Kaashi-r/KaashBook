@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KaashBook</title>
     <link rel="icon" href="./icons/KaashBook-Logo.png" type="image/x-icon" />
-    <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animation.css" />
     <link rel="stylesheet" href="css/fontello.css" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+
 </head>
 
 <body>
@@ -39,10 +40,13 @@
                 </div>
                 <div id="cash-master" class="collapse p-1 pt-0 mt-1 mx-1">
 
-                    <form id="cash-form" data-cash-id="" onsubmit="return false">
+                    <form id="cash-form" data-cash-id="" onsubmit="return false" class="needs-validation" novalidate>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Name :</span>
                             <input class="form-control" type="text" id="cash-name" placeholder="Petty cash" required />
+                            <div class="invalid-feedback">
+                                Please enter a name.
+                            </div>
                         </div>
                         <div class="input-group mb-1 d-none">
                             <span class="input-group-text">Symbol :</span>
@@ -51,11 +55,17 @@
                         <div class="input-group mb-1">
                             <span class="input-group-text">Opening Date :</span>
                             <input class="form-control" type="date" id="open-date" required />
+                            <div class="invalid-feedback">
+                                Please choose a date.
+                            </div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Opening Balance :</span>
                             <input class="form-control" id="open-bal" type="number" id="amount"
                                 placeholder="Enter amount" min="0" step="0.01" required />
+                            <div class="invalid-feedback">
+                                Please enter opening balance.
+                            </div>
                         </div>
                         <div class="button-group">
                             <span>
@@ -79,10 +89,15 @@
                     </div>
                 </div>
                 <div id="user-master" class="collapse px-1 mt-1 mx-1">
-                    <form id="user-form" data-user-id="" onsubmit="return false">
+                    <form id="user-form" data-user-id="" onsubmit="return false" class="needs-validation" novalidate>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Name :</span>
                             <input class="form-control" type="text" id="user-name" placeholder="Your name" required />
+
+                            <div class="invalid-feedback">
+                                Please enter a username.
+                            </div>
+
                         </div>
                         <div class="button-group mb-1">
                             <span>
@@ -98,7 +113,7 @@
         <div id="entry-half">
             <div id="form-container">
                 <div class="card p-1 mb-1 mx-1">
-                    <form id="entry-form" data-id="" onsubmit="return false">
+                    <form id="entry-form" data-id="" onsubmit="return false" class="needs-validation" novalidate>
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
                         <div class="card mb-1 border-0 col-6">
                             <div id="types-group" class="btn-group" role="group">
@@ -107,21 +122,33 @@
                                 <label class="btn btn-outline-success" for="rcpt">Receipt</label>
                                 <input type="radio" class="btn-check" name="types" id="pymt" value="payment" />
                                 <label class="btn btn-outline-danger" for="pymt">Payment</label>
+                                <div class="invalid-feedback">
+                                    Please select either type.
+                                </div>
                             </div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Date :</span>
                             <input class="form-control" type="date" id="date" min="1970-01-01" autofocus />
+                            <div class="invalid-feedback">
+                                Please choose the date of transaction.
+                            </div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Description : </span>
                             <input class="form-control" type="text" id="description" placeholder="Enter Details"
                                 required />
+                            <div class="invalid-feedback">
+                                Please enter a description.
+                            </div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Amount : </span>
                             <input class="form-control" type="number" id="amount" placeholder="Enter amount" required
                                 min="0" step="0.01" />
+                            <div class="invalid-feedback">
+                                Please enter a valid amount.
+                            </div>
                         </div>
                         <div class="button-group">
                             <span>

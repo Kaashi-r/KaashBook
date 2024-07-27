@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
         transaction.editable
       );
     });
+    // transactionForm.classList = ["needs-validation"];
   }
 
   // Change closing balance
@@ -269,12 +270,6 @@ document.addEventListener("DOMContentLoaded", function () {
     submitBtn.innerText = "Add transaction";
   }
 
-  // Cash form submission handler
-  cashForm.addEventListener("submit", updateCash);
-
-  // User form submission handler
-  userForm.addEventListener("submit", updateUser);
-
   fromToForm.addEventListener("change", function (event) {
     let frDate = formatDate(fromDate.value);
     let tDate = formatDate(toDate.value);
@@ -311,7 +306,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const modified = new Date();
 
     if (isNaN(amount) || description === "" || date === "") {
-      alert("Please enter a valid amount, description, and date.");
       return;
     }
 
@@ -353,6 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
     clearFields();
     dateInput.value = date;
     descriptionInput.focus();
+    transactionForm.classList = ["needs-validation"];
   });
 
   // Transaction form reset handler
@@ -399,14 +394,50 @@ document.addEventListener("DOMContentLoaded", function () {
     "color: lightblue; font-size: 14px;"
   );
 
-  document.getElementById("cash-btn").addEventListener("click", function () {
-    toggleClass("cash-master", "show");
-  });
+  userForm.addEventListener("submit", function (event) {
+    if (!userForm.checkValidity()) {
+      event.preventDefault(); // Prevent form submission
+      event.stopPropagation(); // Stop event propagation
+      return;
+    }
+    updateUser();
 
-  document.getElementById("user-btn").addEventListener("click", function () {
     toggleClass("user-master", "show");
   });
+
+  cashForm.addEventListener("submit", function (event) {
+    if (!cashForm.checkValidity()) {
+      event.preventDefault(); // Prevent form submission
+      event.stopPropagation(); // Stop event propagation
+      return;
+    }
+    updateCash();
+    toggleClass("cash-master", "show");
+  });
 });
+
+(() => {
+  "use strict";
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll(".needs-validation");
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach((form) => {
+    form.addEventListener(
+      "submit",
+      (event) => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        form.classList.add("was-validated");
+      },
+      false
+    );
+  });
+})();
 
 function toggleClass(id, cls) {
   let btn = document.getElementById(id);
