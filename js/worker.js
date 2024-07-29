@@ -103,37 +103,49 @@ self.addEventListener("message", function (event) {
       case "getTransactionsXL":
         getTransactionsXL(db);
         break;
+      default:
+        console.error("Unknown action:", action);
     }
   };
 
   openRequest.onerror = function (event) {
-    console.error("Database error:", event.target.error);
+    const error = event.target.error;
+    handleError(error.name);
   };
 
   function addTransaction(db, transaction) {
     const tx = db.transaction(register, "readwrite");
     const store = tx.objectStore(register);
-    store.add(transaction);
+    const request = store.add(transaction);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
   function updateTransaction(db, transaction) {
     const tx = db.transaction(register, "readwrite");
     const store = tx.objectStore(register);
-    store.put(transaction);
+    const request = store.put(transaction);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
   function deleteTransaction(db, id) {
     const tx = db.transaction(register, "readwrite");
     const store = tx.objectStore(register);
-    store.delete(id);
+    const request = store.delete(id);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
@@ -164,7 +176,9 @@ self.addEventListener("message", function (event) {
       });
       calcClosing();
     };
-    request.onerror = function (event) {};
+    request.onerror = function (event) {
+      handleError(error.name);
+    };
   }
 
   function getFTransactions(db, startDate, endDate) {
@@ -226,7 +240,7 @@ self.addEventListener("message", function (event) {
     };
 
     request.onerror = function (event) {
-      console.error("Request error: ", event.target.errorCode);
+      handleError(error.name);
     };
     calcClosing();
   }
@@ -234,27 +248,36 @@ self.addEventListener("message", function (event) {
   function addUser(db, usr) {
     const tx = db.transaction(user, "readwrite");
     const store = tx.objectStore(user);
-    store.add(usr);
+    const request = store.add(usr);
     tx.oncomplete = function () {
       self.postMessage({ action: "userChanged" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
   function updateUser(db, usr) {
     const tx = db.transaction(user, "readwrite");
     const store = tx.objectStore(user);
-    store.put(usr);
+    const request = store.put(usr);
     tx.oncomplete = function () {
       self.postMessage({ action: "userChanged" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
   function deleteUser(db, id) {
     const tx = db.transaction(user, "readwrite");
     const store = tx.objectStore(user);
-    store.delete(id);
+    const request = store.delete(id);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
@@ -268,6 +291,9 @@ self.addEventListener("message", function (event) {
         action: "updateUsers",
         data: event.target.result,
       });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
@@ -283,7 +309,7 @@ self.addEventListener("message", function (event) {
       };
 
       request.onerror = function (event) {
-        reject(event.target.error);
+        handleError(error.name);
       };
     });
   }
@@ -315,6 +341,9 @@ self.addEventListener("message", function (event) {
         modified,
       });
     };
+    acc.onerror = function (event) {
+      handleError(error.name);
+    };
   }
 
   function updateAccount(db, a) {
@@ -324,7 +353,9 @@ self.addEventListener("message", function (event) {
     tx.oncomplete = function () {
       self.postMessage({ action: "accountChanged" });
     };
-    tx.onerror = function (error) {};
+    acc.onerror = function (event) {
+      handleError(error.name);
+    };
     acc.onsuccess = function (event) {
       const id = 1;
       const account = event.target.result;
@@ -352,9 +383,12 @@ self.addEventListener("message", function (event) {
   function deleteAccount(db, id) {
     const tx = db.transaction(account, "readwrite");
     const store = tx.objectStore(account);
-    store.delete(id);
+    const request = store.delete(id);
     tx.oncomplete = function () {
       self.postMessage({ action: "refresh" });
+    };
+    request.onerror = function (event) {
+      handleError(error.name);
     };
   }
 
@@ -373,6 +407,9 @@ self.addEventListener("message", function (event) {
       accCount = event.target.result.length;
       return accCount;
     };
+    request.onerror = function (event) {
+      handleError(error.name);
+    };
   }
 
   function getAccountsCount(db) {
@@ -386,7 +423,7 @@ self.addEventListener("message", function (event) {
         self.postMessage({ action: "accountChanged" });
       };
       request.onerror = function (event) {
-        reject(event.target.error);
+        handleError(error.name);
       };
     });
   }
@@ -431,7 +468,9 @@ self.addEventListener("message", function (event) {
 
       self.postMessage({ action: "updateClosing", data: { closing } });
     };
-    request.onerror = function (event) {};
+    request.onerror = function (event) {
+      handleError(error.name);
+    };
   }
 
   function getTransactionsXL(db) {
@@ -485,7 +524,28 @@ self.addEventListener("message", function (event) {
         data: tr,
       });
     };
-    request.onerror = function (event) {};
+    request.onerror = function (event) {
+      handleError(error.name);
+    };
+  }
+
+  function handleError(error) {
+    let message = "";
+    switch (error) {
+      case "QuotaExceededError":
+        message = "Disk space is full. Please free up some space.";
+        break;
+      case "DataError":
+        message = "Database is corrupted. Please contact support.";
+        break;
+      case "VersionError":
+        message = "Database version error. Please update the application.";
+        break;
+      default:
+        message = "An unknown error occurred.";
+        break;
+    }
+    self.postMessage({ action: "error", message: message });
   }
 });
 

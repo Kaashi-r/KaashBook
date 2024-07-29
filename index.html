@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="css/fontello.css" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/style.css" />
-
 </head>
 
 <body>
@@ -19,34 +18,31 @@
             <div class="row justify-content-between">
                 <div class="col-8 text-start">
                     <img class="img-fluid p-1 m-1" src="icons/KaashBook-Banner.png" alt="KaashBook Logo"
-                        style="max-height: 40px;">
+                        style="max-height: 40px" />
                 </div>
                 <div class="col-4 text-end">
                     <button class="btn mx-2 my-1 text-light" type="button" data-bs-toggle="collapse"
                         data-bs-target="#nav-expand" aria-expanded="false" aria-controls="nav-expand" id="nav-btn">
                         <i class="icon-menu"></i>
                     </button>
-
                 </div>
             </div>
             <div class="collapse" id="nav-expand">
-                <hr class="p-0 m-1 text-light">
+                <hr class="p-0 m-1 text-light" />
                 <div class="d-grid gap-2">
                     <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="collapse"
                         data-bs-target="#cash-master" aria-expanded="false" aria-controls="cash-master"
                         id="cash-collapse-btn">
-                        <h5 class="m-0 d-inline" id="the-cash">Cashbook</h5> <i class="icon-pencil d-inline"></i>
+                        <h5 class="m-0 d-inline" id="the-cash">Cashbook</h5>
+                        <i class="icon-pencil d-inline"></i>
                     </button>
                 </div>
                 <div id="cash-master" class="collapse p-1 pt-0 mt-1 mx-1">
-
-                    <form id="cash-form" data-cash-id="" onsubmit="return false" class="needs-validation" novalidate>
+                    <form id="cash-form" data-cash-id="" class="needs-validation" novalidate>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Name :</span>
                             <input class="form-control" type="text" id="cash-name" placeholder="Petty cash" required />
-                            <div class="invalid-feedback">
-                                Please enter a name.
-                            </div>
+                            <div class="invalid-feedback">Please enter a name.</div>
                         </div>
                         <div class="input-group mb-1 d-none">
                             <span class="input-group-text">Symbol :</span>
@@ -55,9 +51,7 @@
                         <div class="input-group mb-1">
                             <span class="input-group-text">Opening Date :</span>
                             <input class="form-control" type="date" id="open-date" required />
-                            <div class="invalid-feedback">
-                                Please choose a date.
-                            </div>
+                            <div class="invalid-feedback">Please choose a date.</div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Opening Balance :</span>
@@ -75,29 +69,25 @@
                             </span>
                         </div>
                     </form>
-
                 </div>
-                <hr class="p-0 m-1 text-light">
+                <hr class="p-0 m-1 text-light" />
                 <div>
                     <div class="d-grid gap-2">
                         <button class="btn mx-2 p-1 text-start text-light" type="button" data-bs-toggle="collapse"
                             data-bs-target="#user-master" aria-expanded="false" aria-controls="user-master"
                             id="user-collapse-btn">
-                            <h6 class="m-0  d-inline" id="the-user">User</h6> <i class="icon-pencil d-inline"></i>
+                            <h6 class="m-0 d-inline" id="the-user">User</h6>
+                            <i class="icon-pencil d-inline"></i>
                         </button>
-
                     </div>
                 </div>
                 <div id="user-master" class="collapse px-1 mt-1 mx-1">
-                    <form id="user-form" data-user-id="" onsubmit="return false" class="needs-validation" novalidate>
+                    <form id="user-form" data-user-id="" class="needs-validation" novalidate>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Name :</span>
                             <input class="form-control" type="text" id="user-name" placeholder="Your name" required />
 
-                            <div class="invalid-feedback">
-                                Please enter a username.
-                            </div>
-
+                            <div class="invalid-feedback">Please enter a username.</div>
                         </div>
                         <div class="button-group mb-1">
                             <span>
@@ -112,7 +102,7 @@
 
             <div id="form-container">
                 <div class="card p-1 mb-1 mx-1 shadow-sm">
-                    <form id="entry-form" data-id="" onsubmit="return false" class="needs-validation" novalidate>
+                    <form id="entry-form" data-id="" class="needs-validation" novalidate>
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
                         <div class="card mb-1 border-0 col-6">
                             <div id="types-group" class="btn-group" role="group">
@@ -121,9 +111,7 @@
                                 <label class="btn btn-outline-success" for="rcpt">Receipt</label>
                                 <input type="radio" class="btn-check" name="types" id="pymt" value="payment" />
                                 <label class="btn btn-outline-danger" for="pymt">Payment</label>
-                                <div class="invalid-feedback">
-                                    Please select either type.
-                                </div>
+                                <div class="invalid-feedback">Please select either type.</div>
                             </div>
                         </div>
                         <div class="input-group mb-1">
@@ -137,17 +125,13 @@
                             <span class="input-group-text">Description : </span>
                             <input class="form-control" type="text" id="description" placeholder="Enter Details"
                                 required />
-                            <div class="invalid-feedback">
-                                Please enter a description.
-                            </div>
+                            <div class="invalid-feedback">Please enter a description.</div>
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Amount : </span>
                             <input class="form-control" type="number" id="amount" placeholder="Enter amount" required
                                 min="0" step="0.01" />
-                            <div class="invalid-feedback">
-                                Please enter a valid amount.
-                            </div>
+                            <div class="invalid-feedback">Please enter a valid amount.</div>
                         </div>
                         <div class="button-group">
                             <span>
@@ -169,15 +153,17 @@
             <div class="card text-center mb-1 mx-1 shadow-sm">
                 <div class="justify-content-between d-inline-flex">
                     <div>
-                        <h5 id="transaction-text" class="fw-bold mx-2 my-1">Transactions</h5>
+                        <h5 id="transaction-text" class="fw-bold mx-2 my-1">
+                            Transactions
+                        </h5>
                     </div>
                     <div>
-                        <button class="btn p-1 shadow-sm m-1" id="xl-btn"><i class="icon-table"></i></button>
+                        <button class="btn p-1 shadow-sm m-1" id="xl-btn">
+                            <i class="icon-table"></i>
+                        </button>
                     </div>
                 </div>
-
-
-                <form id="from-to-form" onsubmit="return false" class="d-inline-flex">
+                <form id="from-to-form" class="d-inline-flex">
                     <div class="input-group m-1">
                         <span class="input-group-text">From :</span>
                         <input class="form-control p-0" type="date" id="from-date" required />
@@ -210,42 +196,61 @@
                 <table class="table table-bordered m-0">
                     <tfoot>
                         <tr id="closing-row">
-                            <td class="col-9 text-end">Closing Balance
+                            <td class="col-9 text-end">Closing Balance</td>
+                            <td class="col-3 text-end bg-danger" id="closing-balance">
+                                0.00
                             </td>
-                            <td class="col-3 text-end bg-danger" id="closing-balance">0.00</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
-        <!-- Edit Modal -->
+
+        <!-- Edit Modal Template -->
         <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header p-2">
-                        <h1 class="modal-title fs-5" id="edit-modal-label">Modal title</h1>
+                        <h1 class="modal-title fs-5" id="edit-modal-label">
+                            Modal title
+                        </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-1">
                         <div class="mb-1">
                             <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal"
-                                id="modal-edit-btn">Edit</button>
+                                id="modal-edit-btn">
+                                Edit
+                            </button>
                         </div>
                         <div>
                             <button type="button" class="btn btn-danger w-100" id="modal-delete-btn"
-                                data-bs-dismiss="modal">Delete</button>
+                                data-bs-dismiss="modal">
+                                Delete
+                            </button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Toast Template -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="live-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="1500">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Title</strong>
+
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-content">content</div>
+        </div>
+    </div>
+
     <script src="js/xlsx.mini.min.js"></script>
     <script src="bootstrap/popper.min.js"></script>
     <script src="bootstrap/bootstrap.min.js"></script>
     <script src="js/script.js"></script>
-    <script></script>
 </body>
 
 </html>

@@ -34,35 +34,45 @@ document.addEventListener("DOMContentLoaded", function () {
   const openDateInput = document.getElementById("open-date");
   const editModal = document.getElementById("edit-modal");
   const editModalLabel = document.getElementById("edit-modal-label");
-  let mdlEditBtn = document.getElementById("modal-edit-btn");
-  let mdlDltBtn = document.getElementById("modal-delete-btn");
   const rcpt = document.getElementById("rcpt");
   const pymt = document.getElementById("pymt");
   const fromDate = document.getElementById("from-date");
   const toDate = document.getElementById("to-date");
   const fromToForm = document.getElementById("from-to-form");
 
+  let mdlEditBtn = document.getElementById("modal-edit-btn");
+  let mdlDltBtn = document.getElementById("modal-delete-btn");
+
   let cBook = [];
   let isUpdating = 0;
 
+  /**
+   * Formats the given date into a string with the format YYYY-MM-DD.
+   * @param {Date} date - The date to format.
+   * @returns {string} The formatted date string.
+   */
   const formatDate = (date) => {
     if (!date) {
       return ""; // Return an empty string if the date is invalid
     }
     try {
+      date = new Date(date);
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
-    } catch {
-      return date;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return ""; // Return an empty string if an error occurs
     }
   };
 
   // Set the initial date to be Today's
   dateInput.value = formatDate(new Date());
 
-  // Clears transaction table before reload on every transaction entry
+  /**
+   * Clears the transaction table by removing all existing rows.
+   */
   function clearTable() {
     // Clear existing transactions
     while (tBody.children.length > 0) {
@@ -70,14 +80,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  fromDate.value = localStorage.getItem("from-date")
-    ? localStorage.getItem("from-date")
-    : formatDate(aWeekAgo);
-  toDate.value = localStorage.getItem("to-date")
-    ? localStorage.getItem("to-date")
-    : formatDate(today);
+  fromDate.value = localStorage.getItem("from-date") || formatDate(aWeekAgo);
+  toDate.value = localStorage.getItem("to-date") || formatDate(today);
 
-  // Function to render transactions
+  /**
+   * Renders the list of transactions into the table.
+   * @param {Array} transactions - The array of transaction objects to render.
+   */
   function renderTransactions(transactions) {
     cBook = transactions;
     clearTable();
@@ -97,15 +106,26 @@ document.addEventListener("DOMContentLoaded", function () {
     // transactionForm.classList = ["needs-validation"];
   }
 
-  // Change closing balance
+  /**
+   * Updates the closing balance display.
+   * @param {number} closing - The new closing balance.
+   */
   function changeClosing(closing) {
-    cBalance.innerHTML = formatter.format(closing);
+    cBalance.textContent = formatter.format(closing);
     closing < 0
       ? (cBalance.classList = "col-3 text-end bg-danger text-light")
       : (cBalance.classList = "col-3 text-end");
   }
 
-  // Function to add a new row
+  /**
+   * Adds a new row to the transaction table.
+   * @param {number} amount - The amount of the transaction.
+   * @param {string} description - The description of the transaction.
+   * @param {string} date - The date of the transaction.
+   * @param {number} id - The unique identifier of the transaction.
+   * @param {boolean} added - Flag indicating if the transaction was added.
+   * @param {boolean} editable - Flag indicating if the transaction can be edited.
+   */
   function addTransactionRow(amount, description, date, id, added, editable) {
     const dateCell = document.createElement("td");
     dateCell.textContent = date;
@@ -149,6 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         newMdlDltBtn.addEventListener("click", function () {
           worker.postMessage({ action: "deleteTransaction", data: { id: id } });
+          showToast("Transaction deleted", "Deleted", "red");
           clearFields();
         });
 
@@ -161,133 +182,52 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // // Initial render
-  // worker.postMessage({ action: "getTransactions" });
-  worker.postMessage({
-    action: "getFTransactions",
-    data: { from: fromDate.value, to: toDate.value },
-  });
+  refreshTransactions();
   worker.postMessage({ action: "addPrimary" });
 
   // Listen for messages from the worker
   worker.onmessage = function (event) {
     const { action, data } = event.data;
 
-    if (action === "getTransactions") {
-      renderTransactions(data);
-    } else if (action === "refresh") {
-      worker.postMessage({ action: "getTransactions" });
-    } else if (action === "userChanged") {
-      worker.postMessage({ action: "getUsers" });
-    } else if (action === "updateUsers") {
-      updateUserForm(data[0]);
-    } else if (action === "accountChanged") {
-      worker.postMessage({ action: "getAccounts" });
-    } else if (action === "updateAccounts") {
-      updateCashForm(data[0]);
-    } else if (action === "updateClosing") {
-      changeClosing(data.closing);
-    } else if (action === "exportXL") {
-      exportXL(data);
+    switch (action) {
+      case "getTransactions":
+        renderTransactions(data);
+        break;
+      case "refresh":
+        refreshTransactions();
+        break;
+      case "userChanged":
+        worker.postMessage({ action: "getUsers" });
+        break;
+      case "updateUsers":
+        updateUserForm(data[0]);
+        break;
+      case "accountChanged":
+        worker.postMessage({ action: "getAccounts" });
+        break;
+      case "updateAccounts":
+        updateCashForm(data[0]);
+        break;
+      case "updateClosing":
+        changeClosing(data.closing);
+        break;
+      case "exportXL":
+        exportXL(data);
+        break;
+      case "error":
+        showToast("Error", data.message, "red");
+        break;
+      default:
+        console.warn("Unhandled action:", action);
     }
   };
-  // Update transaction for on editing transaction
-  function updateForm(date, description, amount, id) {
-    let ttype = amount < 0 ? "payment" : "receipt";
-    amount = amount < 0 ? -amount : amount;
-    amountInput.value = amount;
-    descriptionInput.value = description;
-    dateInput.value = date;
-    for (const radioButton of typeRadio) {
-      if (radioButton.value === ttype) {
-        radioButton.checked = true;
-      } else {
-        radioButton.checked = false;
-      }
-    }
-    isUpdating = true;
-    transactionForm.setAttribute("data-id", id);
-    submitBtn.innerText = "Update transaction";
-  }
-
-  // temporary function for single user entry form
-  function updateUserForm(data) {
-    uNameInput.value = data.name;
-    userForm.setAttribute("data-user-id", data.id);
-    userBtn.innerText = data.name;
-    localStorage.setItem("user-id", data.id);
-  }
-
-  // temporary function for single cash entry form
-  function updateCashForm(data) {
-    cNameInput.value = data.name;
-    cSymbolInput.value = data.symbol;
-    openBalInput.value = data.openBal;
-    openDateInput.value = data.openDate;
-    cashForm.setAttribute("data-cash-id", data.id);
-    cashBtn.textContent = data.name;
-    cName.textContent = data.name + " Transactions";
-    localStorage.setItem("cash-id", data.id);
-    localStorage.setItem("decimal", data.decimals);
-    localStorage.setItem("enrty-added", data.added);
-    date.setAttribute("min", data.openDate);
-    fromDate.setAttribute("min", data.openDate);
-    toDate.setAttribute("min", data.openDate);
-  }
-
-  // update cash in database
-  function updateCash() {
-    worker.postMessage({
-      action: "updateAccount",
-      data: {
-        name: cNameInput.value,
-        symbol: cSymbolInput.value,
-        openBal: openBalInput.value,
-        openDate: formatDate(openDateInput.value),
-        id: Number.parseInt(cashForm.getAttribute("data-cash-id")),
-        decimals: 3,
-        users: [],
-        added: new Date(),
-      },
-    });
-  }
-
-  // update User in database
-  function updateUser() {
-    worker.postMessage({
-      action: "updateUser",
-      data: {
-        name: uNameInput.value,
-        id: Number.parseInt(userForm.getAttribute("data-user-id")),
-        password: "",
-      },
-    });
-  }
-
-  // Clear transacion form
-  function clearFields() {
-    amountInput.value = "";
-    descriptionInput.value = "";
-    transactionForm.setAttribute("data-id", "");
-    isUpdating = false;
-    submitBtn.innerText = "Add transaction";
-  }
-
-  fromToForm.addEventListener("change", function (event) {
-    let frDate = formatDate(fromDate.value);
-    let tDate = formatDate(toDate.value);
-
-    localStorage.setItem("from-date", frDate);
-    localStorage.setItem("to-date", tDate);
-
-    worker.postMessage({
-      action: "getFTransactions",
-      data: { from: frDate, to: tDate },
-    });
-  });
-
-  // Transaction form submission handler
-  transactionForm.addEventListener("submit", function (event) {
-    event.preventDefault();
+  /**
+   *
+   * Cash transaction entry function
+   * @param {Event} event
+   * @return {*}
+   */
+  function submitEntry(event) {
     let type;
 
     // const type = typeInput.value;
@@ -330,6 +270,13 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       isUpdating = false;
       transactionForm.setAttribute("data-id", "");
+      showToast(
+        "Transaction Updated",
+        (type === "payment" ? "Payment" : "Receipt") +
+          " of " +
+          formatter.format(Math.abs(transactionAmount) / 1000),
+        "green"
+      );
     } else {
       worker.postMessage({
         action: "addTransaction",
@@ -344,41 +291,228 @@ document.addEventListener("DOMContentLoaded", function () {
           modified,
         },
       });
+      showToast(
+        "Transaction Added",
+        (type === "payment" ? "Payment" : "Receipt") +
+          " of " +
+          formatter.format(Math.abs(transactionAmount) / 1000),
+        "green"
+      );
     }
 
     clearFields();
     dateInput.value = date;
     descriptionInput.focus();
     transactionForm.classList = ["needs-validation"];
-  });
+  }
 
-  // Transaction form reset handler
-  transactionForm.addEventListener("reset", function (event) {
+  /**
+   * Updates the transaction form with the details of the specified transaction.
+   * @param {string} date - The date of the transaction.
+   * @param {string} description - The description of the transaction.
+   * @param {number} amount - The amount of the transaction.
+   * @param {number} id - The unique identifier of the transaction.
+   */
+  function updateForm(date, description, amount, id) {
+    let ttype = amount < 0 ? "payment" : "receipt";
+    amount = amount < 0 ? -amount : amount;
+    amountInput.value = amount;
+    descriptionInput.value = description;
+    dateInput.value = date;
+    for (const radioButton of typeRadio) {
+      if (radioButton.value === ttype) {
+        radioButton.checked = true;
+      } else {
+        radioButton.checked = false;
+      }
+    }
+    isUpdating = true;
+    transactionForm.setAttribute("data-id", id);
+    submitBtn.innerText = "Update transaction";
+  }
+
+  /**
+   * Updates the user form with the provided user data.
+   * @param {Object} data - The user data.
+   */
+  function updateUserForm(data) {
+    uNameInput.value = data.name;
+    userForm.setAttribute("data-user-id", data.id);
+    userBtn.innerText = data.name;
+    localStorage.setItem("user-id", data.id);
+  }
+
+  /**
+   * Updates the cash form with the provided account data.
+   * @param {Object} data - The account data.
+   */
+  function updateCashForm(data) {
+    cNameInput.value = data.name;
+    cSymbolInput.value = data.symbol;
+    openBalInput.value = data.openBal;
+    openDateInput.value = data.openDate;
+    cashForm.setAttribute("data-cash-id", data.id);
+    cashBtn.textContent = data.name;
+    cName.textContent = data.name + " Transactions";
+    localStorage.setItem("cash-id", data.id);
+    localStorage.setItem("decimal", data.decimals);
+    localStorage.setItem("enrty-added", data.added);
+    date.setAttribute("min", data.openDate);
+    fromDate.setAttribute("min", data.openDate);
+    toDate.setAttribute("min", data.openDate);
+  }
+
+  /**
+   * Updates the cash in the database.
+   */
+  function updateCash() {
+    worker.postMessage({
+      action: "updateAccount",
+      data: {
+        name: cNameInput.value,
+        symbol: cSymbolInput.value,
+        openBal: openBalInput.value,
+        openDate: formatDate(openDateInput.value),
+        id: Number.parseInt(cashForm.getAttribute("data-cash-id")),
+        decimals: 3,
+        users: [],
+        added: new Date(),
+      },
+    });
+    showToast("Account Updated", cNameInput.value, "green");
+  }
+
+  /**
+   * Updates the user in the database.
+   */
+  function updateUser() {
+    worker.postMessage({
+      action: "updateUser",
+      data: {
+        name: uNameInput.value,
+        id: Number.parseInt(userForm.getAttribute("data-user-id")),
+        password: "",
+      },
+    });
+    showToast("User Updated", uNameInput.value, "blue");
+  }
+
+  /**
+   * Clears all input fields in the transaction form.
+   */
+  function clearFields() {
+    amountInput.value = "";
+    descriptionInput.value = "";
     transactionForm.setAttribute("data-id", "");
+    isUpdating = false;
     submitBtn.innerText = "Add transaction";
-    dateInput.focus();
-  });
+  }
 
-  // Keyboard shortcut to toggle between Receipt and Payment
-  document.addEventListener("keydown", function (event) {
-    if (event.ctrlKey && event.shiftKey && event.key === "+") {
-      event.preventDefault(); // Prevent the default action
-      let xx = pymt.checked;
+  /**
+   * Load transactions from database
+   */
+  function refreshTransactions() {
+    let frDate = formatDate(fromDate.value);
+    let tDate = formatDate(toDate.value);
+    worker.postMessage({
+      action: "getFTransactions",
+      data: { from: frDate, to: tDate },
+    });
+  }
 
-      pymt.checked = !xx;
-      rcpt.checked = xx;
-    }
-  });
-  // Keyboard shortcut to increase date if dateInput is selected
-  dateInput.addEventListener("keydown", function (event) {
-    if (event.key === "+") {
-      changeDate(1);
-    } else if (event.key === "-") {
-      changeDate(-1);
-    }
-  });
+  /**
+   * Sets up event listeners for form actions and buttons.
+   */
+  function setupEventListeners() {
+    fromToForm.addEventListener("change", function (event) {
+      let frDate = formatDate(fromDate.value);
+      let tDate = formatDate(toDate.value);
+      localStorage.setItem("from-date", frDate);
+      localStorage.setItem("to-date", tDate);
+      refreshTransactions();
+      return false;
+    });
 
-  // change the datepicker day
+    // Transaction form submission handler
+    transactionForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      submitEntry(event);
+      return false;
+    });
+
+    // Transaction form reset handler
+    transactionForm.addEventListener("reset", function (event) {
+      transactionForm.setAttribute("data-id", "");
+      submitBtn.innerText = "Add transaction";
+      dateInput.focus();
+    });
+
+    // Keyboard shortcut to toggle between Receipt and Payment
+    document.addEventListener("keydown", function (event) {
+      if (event.ctrlKey && event.shiftKey && event.key === "+") {
+        event.preventDefault(); // Prevent the default action
+        let xx = pymt.checked;
+
+        pymt.checked = !xx;
+        rcpt.checked = xx;
+      }
+    });
+    // Keyboard shortcut to increase date if dateInput is selected
+    dateInput.addEventListener("keydown", function (event) {
+      if (event.key === "+") {
+        changeDate(1);
+      } else if (event.key === "-") {
+        changeDate(-1);
+      }
+    });
+    // listen for changes in user form
+    userForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!userForm.checkValidity()) {
+        event.preventDefault(); // Prevent form submission
+        event.stopPropagation(); // Stop event propagation
+        return;
+      }
+      updateUser();
+
+      const bsCollapse = new bootstrap.Collapse(
+        document.getElementById("user-master"),
+        {
+          toggle: false,
+        }
+      ).hide();
+      return false;
+    });
+
+    // listen for changes in cash form
+    cashForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!cashForm.checkValidity()) {
+        event.preventDefault(); // Prevent form submission
+        event.stopPropagation(); // Stop event propagation
+        return;
+      }
+      updateCash();
+      const bsCollapse = new bootstrap.Collapse(
+        document.getElementById("cash-master"),
+        {
+          toggle: false,
+        }
+      ).hide();
+      return false;
+    });
+    // listen for clicks on spreadsheet export button
+    document.getElementById("xl-btn").addEventListener("click", () => {
+      worker.postMessage({ action: "getTransactionsXL" });
+    });
+  }
+
+  setupEventListeners();
+
+  /**
+   * Changes the date in the datepicker by a specified number of days.
+   * @param {number} days - The number of days to change the date by.
+   */
   function changeDate(days) {
     const currentDate = new Date(dateInput.value);
     if (!isNaN(currentDate)) {
@@ -387,50 +521,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  console.log(
-    "%c Ⓚ Welcome to the KaashBook Extension! Ⓚ",
-    "color: lightgreen; font-size: 16px; font-weight: bold;"
-  );
-  console.log(
-    "%cTracking your transactions has never been easier, within your web browser, where you do everything else!",
-    "color: lightblue; font-size: 14px;"
-  );
-
-  userForm.addEventListener("submit", function (event) {
-    if (!userForm.checkValidity()) {
-      event.preventDefault(); // Prevent form submission
-      event.stopPropagation(); // Stop event propagation
-      return;
-    }
-    updateUser();
-
-    const bsCollapse = new bootstrap.Collapse(
-      document.getElementById("user-master"),
-      {
-        toggle: false,
-      }
-    ).hide();
-  });
-
-  cashForm.addEventListener("submit", function (event) {
-    if (!cashForm.checkValidity()) {
-      event.preventDefault(); // Prevent form submission
-      event.stopPropagation(); // Stop event propagation
-      return;
-    }
-    updateCash();
-    const bsCollapse = new bootstrap.Collapse(
-      document.getElementById("cash-master"),
-      {
-        toggle: false,
-      }
-    ).hide();
-  });
-
-  document.getElementById("xl-btn").addEventListener("click", () => {
-    worker.postMessage({ action: "getTransactionsXL" });
-  });
-
+  /**
+   * Exports the transactions data to an Excel file.
+   * @param {Array} data - The transactions data to export.
+   */
   function exportXL(data) {
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -442,12 +536,33 @@ document.addEventListener("DOMContentLoaded", function () {
     // Generate XLSX file and trigger download
     XLSX.writeFile(workbook, `KaashBook ${cName.textContent}.xlsx`);
   }
+
+  /**
+   *Show a Bootstrap Toast element to deliver feedback
+   * @param {String} title
+   * @param {String} message
+   * @param {String} color
+   */
+  function showToast(title, message, color) {
+    console.log("show toast called");
+
+    document.getElementById("toast-title").textContent = title;
+    document.getElementById("toast-title").style.color = color;
+    document.getElementById("toast-content").textContent = message;
+
+    const toastHTML = document.getElementById("live-toast");
+    const newToast = toastHTML.cloneNode(true);
+    toastHTML.parentNode.replaceChild(newToast, toastHTML);
+    const toast = new bootstrap.Toast(newToast);
+    toast.show();
+  }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  unCollapse("nav-expand", '[data-bs-target="#nav-expand"]');
-});
-
+/**
+ * Adding boostrap collapse closing functionality for elements
+ * @param {String} collapse
+ * @param {Strin} btn
+ */
 function unCollapse(collapse, btn) {
   const collapseElement = document.getElementById(collapse);
   const button = document.querySelector(btn);
@@ -465,8 +580,21 @@ function unCollapse(collapse, btn) {
       bsCollapse.hide();
     }
   });
-}
 
+  console.log(
+    "%c Ⓚ Welcome to the KaashBook Extension! Ⓚ",
+    "color: lightgreen; font-size: 16px; font-weight: bold;"
+  );
+  console.log(
+    "%c Record your transactions with this offline cash book extension",
+    "color: lightblue; font-size: 14px;"
+  );
+}
+document.addEventListener("DOMContentLoaded", function () {
+  unCollapse("nav-expand", '[data-bs-target="#nav-expand"]');
+});
+
+// Function to bypass HTML5 error feedback (Because it won't work in the extension sidebar) and show Bootstrap style ones.
 (() => {
   "use strict";
 
