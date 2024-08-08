@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "KaashBook",
-  "version": "1.0",
+  "name": "KaashBook: A simple cashbook",
+  "version": "1.1",
   "description": "A simple offline cashbook extension to keep your daily transactions, within your browser!.",
   "permissions": ["storage", "tabs", "unlimitedStorage"],
   "background": {
@@ -9,7 +9,11 @@
     "persistent": false
   },
   "sidebar_action": {
-    "default_icon": "icons/KaashBook-Logo.png",
+    "default_icon": {
+      "32": "icons/KaashBookLogoAddon32.png",
+      "64": "icons/KaashBookLogoAddon64.png",
+      "128": "icons/KaashBookLogoAddon128.png"
+    },
     "default_title": "KaashBook",
     "default_panel": "index.html"
   },
@@ -22,11 +26,15 @@
   "browser_action": {
     "default_title": "Open Cash Register",
     "default_icon": {
-      "48": "icons/KaashBook-Logo.png"
+      "32": "icons/KaashBookLogoAddon32.png",
+      "64": "icons/KaashBookLogoAddon64.png",
+      "128": "icons/KaashBookLogoAddon128.png"
     }
   },
   "icons": {
-    "48": "icons/KaashBook-Logo.png"
+    "32": "icons/KaashBookLogoAddon32.png",
+    "64": "icons/KaashBookLogoAddon64.png",
+    "128": "icons/KaashBookLogoAddon128.png"
   },
 
   "web_accessible_resources": ["js/worker.js"],
