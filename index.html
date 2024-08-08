@@ -29,54 +29,31 @@
             </div>
             <div class="collapse" id="nav-expand">
                 <hr class="p-0 m-1 text-light" />
-                <div class="d-grid gap-2">
-                    <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#cash-master" aria-expanded="false" aria-controls="cash-master"
-                        id="cash-collapse-btn">
+                <div class="d-flex gap-1">
+                    <button class="btn p-1 mx-1 text-start text-light flex-fill" type="button" data-bs-toggle="modal"
+                        data-bs-target="#account-list-modal" data-bs-dismiss="collapse" id="cash-collapse-btn">
                         <h5 class="m-0 d-inline" id="the-cash">Cashbook</h5>
+
+                    </button>
+                    <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
+                        data-bs-target="#account-modal" id="cash-edit-btn">
                         <i class="icon-pencil d-inline"></i>
+                    </button>
+                    <button class="btn p-1 ms-1 me-2 text-start text-light" type="button" data-bs-toggle="modal"
+                        data-bs-target="#new-account-modal" id="cash-add-btn">
+                        <i class="icon-plus d-inline"></i>
                     </button>
                 </div>
                 <div id="cash-master" class="collapse p-1 pt-0 mt-1 mx-1">
-                    <form id="cash-form" data-cash-id="" class="needs-validation" novalidate>
-                        <div class="input-group mb-1">
-                            <span class="input-group-text">Name :</span>
-                            <input class="form-control" type="text" id="cash-name" placeholder="Petty cash" required />
-                            <div class="invalid-feedback">Please enter a name.</div>
-                        </div>
-                        <div class="input-group mb-1 d-none">
-                            <span class="input-group-text">Symbol :</span>
-                            <input class="form-control" type="text" id="cash-symbol" required />
-                        </div>
-                        <div class="input-group mb-1">
-                            <span class="input-group-text">Opening Date :</span>
-                            <input class="form-control" type="date" id="open-date" required />
-                            <div class="invalid-feedback">Please choose a date.</div>
-                        </div>
-                        <div class="input-group mb-1">
-                            <span class="input-group-text">Opening Balance :</span>
-                            <input class="form-control" id="open-bal" type="number" id="amount"
-                                placeholder="Enter amount" min="0" step="0.01" required />
-                            <div class="invalid-feedback">
-                                Please enter opening balance.
-                            </div>
-                        </div>
-                        <div class="button-group">
-                            <span>
-                                <button type="submit" id="cash-btn" class="btn btn-primary mr-1">
-                                    Update Cash
-                                </button>
-                            </span>
-                        </div>
-                    </form>
+
                 </div>
                 <hr class="p-0 m-1 text-light" />
                 <div>
                     <div class="d-grid gap-2">
-                        <button class="btn mx-2 p-1 text-start text-light" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#user-master" aria-expanded="false" aria-controls="user-master"
-                            id="user-collapse-btn">
-                            <h6 class="m-0 d-inline" id="the-user">User</h6>
+                        <button class="btn mx-1 p-1 text-start text-light mb-1 d-flex" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#user-master" aria-expanded="false"
+                            aria-controls="user-master" id="user-collapse-btn">
+                            <h6 class="m-0 d-inline flex-fill" id="the-user">User</h6>
                             <i class="icon-pencil d-inline"></i>
                         </button>
                     </div>
@@ -104,7 +81,7 @@
                 <div class="card p-1 mb-1 mx-1 shadow-sm">
                     <form id="entry-form" data-id="" class="needs-validation" novalidate>
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
-                        <div class="card mb-1 border-0 col-6">
+                        <div class="card mb-1 border-0 col-md-6 col-12">
                             <div id="types-group" class="btn-group" role="group">
                                 <input type="radio" class="btn-check mr-1" name="types" id="rcpt" value="receipt"
                                     checked />
@@ -133,17 +110,16 @@
                                 min="0" step="0.01" />
                             <div class="invalid-feedback">Please enter a valid amount.</div>
                         </div>
-                        <div class="button-group">
-                            <span>
-                                <button type="submit" id="submit-btn" class="btn btn-primary mr-1">
-                                    Add Transaction
-                                </button>
-                            </span>
-                            <span>
-                                <button type="reset" id="reset-btn" class="btn btn-secondary">
-                                    Reset
-                                </button>
-                            </span>
+                        <div class="button-group d-flex">
+
+                            <button type="submit" id="submit-btn" class="btn btn-primary me-1 flex-fill">
+                                Add Transaction
+                            </button>
+
+                            <button type="reset" id="reset-btn" class="btn btn-secondary">
+                                Reset
+                            </button>
+
                         </div>
                     </form>
                 </div>
@@ -206,7 +182,7 @@
             </div>
         </div>
 
-        <!-- Edit Modal Template -->
+        <!-- Edit Transaction Modal -->
         <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -235,7 +211,125 @@
         </div>
     </div>
 
-    <!-- Toast Template -->
+    <!-- Edit Account Modal -->
+    <div class="modal fade" id="account-modal" tabindex="-1" aria-labelledby="account-modal-label" aria-hidden="true"
+        data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header p-2">
+                    <h1 class="modal-title fs-5" id="account-modal-label">
+                        Edit Account
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1">
+                    <form id="cash-form" data-cash-id="" class="needs-validation" novalidate>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Name :</span>
+                            <input class="form-control" type="text" id="cash-name" placeholder="Petty cash" required />
+                            <div class="invalid-feedback">Please enter a name.</div>
+                        </div>
+                        <div class="input-group mb-1 d-none">
+                            <span class="input-group-text">Symbol :</span>
+                            <input class="form-control" type="text" id="cash-symbol" required />
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Date :</span>
+                            <input class="form-control" type="date" id="open-date" required />
+                            <div class="invalid-feedback">Please choose a date.</div>
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Balance :</span>
+                            <input class="form-control" id="open-bal" type="number" placeholder="Enter amount" min="0"
+                                step="0.01" required />
+                            <div class="invalid-feedback">
+                                Please enter opening balance.
+                            </div>
+                        </div>
+                        <div class="button-group d-flex">
+
+                            <button type="submit" id="cash-btn" class="btn btn-primary mr-1 flex-fill">
+                                Update account
+                            </button>
+
+                        </div>
+                    </form>
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Account Modal -->
+    <div class="modal fade" id="new-account-modal" tabindex="-1" aria-labelledby="new-account-modal-label"
+        aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header p-2">
+                    <h1 class="modal-title fs-5" id="new-account-modal-label">
+                        Edit Account
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1">
+                    <form id="new-cash-form" data-cash-id="" class="needs-validation" novalidate>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Name :</span>
+                            <input class="form-control" type="text" id="new-cash-name" placeholder="Petty cash"
+                                required />
+                            <div class="invalid-feedback">Please enter a name.</div>
+                        </div>
+                        <div class="input-group mb-1 d-none">
+                            <span class="input-group-text">Symbol :</span>
+                            <input class="form-control" type="text" id="new-cash-symbol" value="$" required />
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Date :</span>
+                            <input class="form-control" type="date" id="new-open-date" required />
+                            <div class="invalid-feedback">Please choose a date.</div>
+                        </div>
+                        <div class="input-group mb-1">
+                            <span class="input-group-text">Opening Balance :</span>
+                            <input class="form-control" id="new-open-bal" type="number" placeholder="Enter amount"
+                                min="0" step="0.01" required />
+                            <div class="invalid-feedback">
+                                Please enter opening balance.
+                            </div>
+                        </div>
+                        <div class="button-group d-flex">
+
+                            <button type="submit" id="cash-btn" class="btn btn-primary mr-1 flex-fill">
+                                Add account
+                            </button>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account List Modal -->
+    <div class="modal fade" id="account-list-modal" tabindex="-1" aria-labelledby="new-account-modal-label"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header p-2">
+                    <h1 class="modal-title fs-5">
+                        Select an Account
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1 d-grid gap-1" id="account-list">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="live-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="1500">
             <div class="toast-header">

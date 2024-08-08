@@ -70,7 +70,7 @@ self.addEventListener("message", function (event) {
         break;
       case "getFTransactions":
         // getTransactions(db);
-        getFTransactions(db, data.from, data.to);
+        getFTransactions(db, data.from, data.to, data.account);
         break;
       case "addUser":
         addUser(db, data);
@@ -101,7 +101,7 @@ self.addEventListener("message", function (event) {
         addPrimaryCash(db);
         break;
       case "getTransactionsXL":
-        getTransactionsXL(db);
+        getTransactionsXL(db, data.acc);
         break;
       default:
         console.error("Unknown action:", action);
@@ -181,10 +181,11 @@ self.addEventListener("message", function (event) {
     };
   }
 
-  function getFTransactions(db, startDate, endDate) {
+  function getFTransactions(db, startDate, endDate, acc) {
     const tx = db.transaction("register", "readonly");
     const store = tx.objectStore("register");
-    const index = store.index("date");
+    const dateIndex = store.index("date");
+    const regIndex = store.index("account");
 
     let range;
     let request;
@@ -196,13 +197,28 @@ self.addEventListener("message", function (event) {
     } else if (endDate !== "") {
       range = IDBKeyRange.upperBound(endDate);
     } else {
-      getTransactions(db);
-      return;
+      range = null;
+    }
+
+    if (acc !== "") {
+      // Filter by registerName
+
+      if (range) {
+        request = regIndex.openCursor(IDBKeyRange.only(acc));
+      } else {
+        request = regIndex.openCursor();
+      }
+
+      // request = range
+      //   ? regIndex.openCursor(IDBKeyRange.only(register))
+      //   : store.openCursor(); // You might need to adjust this line if the index should be used for both date and registerName.
+    } else {
+      // No register filter applied
+      request = range ? dateIndex.openCursor(range) : dateIndex.openCursor();
     }
 
     // Create a range for date strings
 
-    request = index.openCursor(range);
     let transactions = []; // Collect transactions here
 
     request.onsuccess = function (event) {
@@ -242,7 +258,7 @@ self.addEventListener("message", function (event) {
     request.onerror = function (event) {
       handleError(error.name);
     };
-    calcClosing();
+    calcClosing(acc);
   }
 
   function addUser(db, usr) {
@@ -319,11 +335,11 @@ self.addEventListener("message", function (event) {
     const store = tx.objectStore(account);
     let acc = store.add(a);
     tx.oncomplete = function () {
-      self.postMessage({ action: "refresh" });
+      self.postMessage({ action: "accountChanged" });
     };
     acc.onsuccess = function (event) {
       const account = event.target.result;
-      const amount = a.openBal;
+      const amount = a.openBal * 1000;
       const date = a.openDate;
       const user = a.users[0];
       const added = new Date();
@@ -451,78 +467,112 @@ self.addEventListener("message", function (event) {
     });
   }
 
-  function calcClosing() {
+  function calcClosing(acc) {
     let closing = 0;
 
     const tx = db.transaction(register, "readonly");
     const store = tx.objectStore(register);
-    const request = store.getAll();
+    const regIndex = store.index("account");
+    let request;
+    let transactions = [];
+
+    if (acc !== "") {
+      request = regIndex.openCursor(IDBKeyRange.only(acc));
+    } else {
+      request = store.openCursor();
+    }
 
     request.onsuccess = function (event) {
-      let transactions = event.target.result;
+      const cursor = event.target.result;
 
-      closing =
-        transactions.reduce((p, c) => {
-          return p + c.amount;
-        }, 0) / 1000;
+      if (cursor) {
+        transactions.push(cursor.value); // Add current cursor value to transactions array
+        cursor.continue(); // Continue to the next cursor entry
+      } else {
+        closing =
+          transactions.reduce((p, c) => {
+            return p + c.amount;
+          }, 0) / 1000;
 
-      self.postMessage({ action: "updateClosing", data: { closing } });
+        closing >= 0 || handleError("NegativeError");
+        self.postMessage({ action: "updateClosing", data: { closing } });
+      }
     };
     request.onerror = function (event) {
       handleError(error.name);
     };
   }
 
-  function getTransactionsXL(db) {
+  function getTransactionsXL(db, acc) {
     const tx = db.transaction(register, "readonly");
     const store = tx.objectStore(register);
-    const request = store.getAll();
+    const regIndex = store.index("account");
+
+    let request;
+
+    let transactions = [];
+
+    if (acc !== "") {
+      request = regIndex.openCursor(IDBKeyRange.only(acc));
+    } else {
+      request = store.openCursor();
+    }
 
     request.onsuccess = function (event) {
-      let transactions = event.target.result;
-      let ob = transactions[0];
+      const cursor = event.target.result;
+      if (cursor) {
+        //
+        transactions.push(cursor.value); // Add current cursor value to transactions array
+        cursor.continue(); // Continue to the next cursor entry
+      } else {
+        if (transactions.length > 0) {
+          let ob = transactions[0];
 
-      transactions.shift();
+          transactions.shift();
 
-      transactions.sort((a, b) => a.date > b.date);
-      transactions.unshift(ob);
+          transactions.sort((a, b) => a.date > b.date);
+          transactions.unshift(ob);
 
-      transactions.map(function (i) {
-        i.amount = i.amount / 1000;
-        return i;
-      });
+          transactions.map(function (i) {
+            i.amount = i.amount / 1000;
+            return i;
+          });
 
-      let trans = [];
+          let trans = [];
 
-      transactions.map((obj, index) => {
-        let newObj = {};
+          transactions.map((obj, index) => {
+            let newObj = {};
 
-        let da = obj["date"];
-        let de = obj["description"];
-        let am = obj["amount"];
-        let re = am >= 0 ? am : "";
-        let pa = am < 0 ? -am : "";
+            let da = obj["date"];
+            let de = obj["description"];
+            let am = obj["amount"];
+            let re = am >= 0 ? am : "";
+            let pa = am < 0 ? -am : "";
 
-        newObj["Date"] = da;
-        newObj["Details"] = de;
-        newObj["Receipt"] = re;
-        newObj["Payment"] = pa;
+            newObj["Date"] = da;
+            newObj["Details"] = de;
+            newObj["Receipt"] = re;
+            newObj["Payment"] = pa;
 
-        trans.push(newObj);
-      });
+            trans.push(newObj);
+          });
 
-      let tr = trans.map((row, index) => {
-        row["Balance"] =
-          index === 0
-            ? { f: `C${index + 2}-D${index + 2}` }
-            : { f: `C${index + 2}-D${index + 2}+E${index + 1}` }; // Add Excel formula for running balance
-        return row;
-      });
+          let tr = trans.map((row, index) => {
+            row["Balance"] =
+              index === 0
+                ? { f: `C${index + 2}-D${index + 2}` }
+                : { f: `C${index + 2}-D${index + 2}+E${index + 1}` }; // Add Excel formula for running balance
+            return row;
+          });
 
-      self.postMessage({
-        action: "exportXL",
-        data: tr,
-      });
+          self.postMessage({
+            action: "exportXL",
+            data: tr,
+          });
+        } else {
+          handleError("error");
+        }
+      }
     };
     request.onerror = function (event) {
       handleError(error.name);
@@ -540,6 +590,9 @@ self.addEventListener("message", function (event) {
         break;
       case "VersionError":
         message = "Database version error. Please update the application.";
+        break;
+      case "NegativeError":
+        message = "Closing balance is negative. Please check.";
         break;
       default:
         message = "An unknown error occurred.";

@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const userForm = document.getElementById("user-form");
   const uNameInput = document.getElementById("user-name");
   const cashForm = document.getElementById("cash-form");
+  const cashModal = document.getElementById("account-modal");
   const cNameInput = document.getElementById("cash-name");
   const cName = document.getElementById("transaction-text");
   const cSymbolInput = document.getElementById("cash-symbol");
@@ -40,11 +41,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const toDate = document.getElementById("to-date");
   const fromToForm = document.getElementById("from-to-form");
 
+  const newCashForm = document.getElementById("new-cash-form");
+  const newCashModal = document.getElementById("new-account-modal");
+  const newCNameInput = document.getElementById("new-cash-name");
+  const newCSymbolInput = document.getElementById("new-cash-symbol");
+  const newOpenBalInput = document.getElementById("new-open-bal");
+  const newOpenDateInput = document.getElementById("new-open-date");
+
   let mdlEditBtn = document.getElementById("modal-edit-btn");
   let mdlDltBtn = document.getElementById("modal-delete-btn");
 
   let cBook = [];
   let isUpdating = 0;
+
+  localStorage.getItem("cash-id") || localStorage.setItem("cash-id", 1);
+  localStorage.getItem("user-id") || localStorage.setItem("user-id", 1);
 
   /**
    * Formats the given date into a string with the format YYYY-MM-DD.
@@ -69,6 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Set the initial date to be Today's
   dateInput.value = formatDate(new Date());
+  newOpenDateInput.value = formatDate(new Date());
 
   /**
    * Clears the transaction table by removing all existing rows.
@@ -91,9 +103,9 @@ document.addEventListener("DOMContentLoaded", function () {
     cBook = transactions;
     clearTable();
     cBook.forEach(function (transaction, i) {
-      if (i === 0) {
-        localStorage.setItem("cash-id", transaction.id);
-      }
+      // if (i === 0) {
+      //   localStorage.setItem("cash-id", transaction.id);
+      // }
       addTransactionRow(
         transaction.amount,
         transaction.description,
@@ -206,7 +218,15 @@ document.addEventListener("DOMContentLoaded", function () {
         worker.postMessage({ action: "getAccounts" });
         break;
       case "updateAccounts":
-        updateCashForm(data[0]);
+        refreshTransactions();
+        loadAccounts(data);
+        console.log(localStorage.getItem("cash-id"));
+        console.log(data);
+        updateCashForm(
+          data.find(
+            (a) => a["id"] === Number.parseInt(localStorage.getItem("cash-id"))
+          )
+        );
         break;
       case "updateClosing":
         changeClosing(data.closing);
@@ -252,6 +272,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const transactionAmount = type === "payment" ? -amount : amount;
+
+    const cashID = Number.parseInt(localStorage.getItem("cash-id"));
+    const userID = Number.parseInt(localStorage.getItem("user-id"));
+
+    // DB transaction entry
     if (isUpdating) {
       let id = transactionForm.getAttribute("data-id");
       worker.postMessage({
@@ -262,8 +287,8 @@ document.addEventListener("DOMContentLoaded", function () {
           description,
           date,
           editable,
-          byUser: localStorage.getItem("user-id"),
-          account: localStorage.getItem("cash-id"),
+          byUser: userID,
+          account: cashID,
           added: localStorage.getItem("entry-added"),
           modified,
         },
@@ -285,8 +310,8 @@ document.addEventListener("DOMContentLoaded", function () {
           description,
           date,
           editable,
-          byUser: localStorage.getItem("user-id"),
-          account: localStorage.getItem("cash-id"),
+          byUser: userID,
+          account: cashID,
           added,
           modified,
         },
@@ -354,12 +379,30 @@ document.addEventListener("DOMContentLoaded", function () {
     cashForm.setAttribute("data-cash-id", data.id);
     cashBtn.textContent = data.name;
     cName.textContent = data.name + " Transactions";
-    localStorage.setItem("cash-id", data.id);
+
     localStorage.setItem("decimal", data.decimals);
-    localStorage.setItem("enrty-added", data.added);
     date.setAttribute("min", data.openDate);
     fromDate.setAttribute("min", data.openDate);
     toDate.setAttribute("min", data.openDate);
+  }
+
+  /**
+   * Add the new cash to the database.
+   */
+  function addCash() {
+    worker.postMessage({
+      action: "addAccount",
+      data: {
+        name: newCNameInput.value,
+        symbol: newCSymbolInput.value,
+        openBal: Number.parseFloat(newOpenBalInput.value),
+        openDate: formatDate(newOpenDateInput.value),
+        decimals: 3,
+        users: [],
+        added: new Date(),
+      },
+    });
+    showToast("Account Added", newCNameInput.value, "green");
   }
 
   /**
@@ -371,7 +414,7 @@ document.addEventListener("DOMContentLoaded", function () {
       data: {
         name: cNameInput.value,
         symbol: cSymbolInput.value,
-        openBal: openBalInput.value,
+        openBal: Number.parseFloat(openBalInput.value),
         openDate: formatDate(openDateInput.value),
         id: Number.parseInt(cashForm.getAttribute("data-cash-id")),
         decimals: 3,
@@ -416,7 +459,11 @@ document.addEventListener("DOMContentLoaded", function () {
     let tDate = formatDate(toDate.value);
     worker.postMessage({
       action: "getFTransactions",
-      data: { from: frDate, to: tDate },
+      data: {
+        from: frDate,
+        to: tDate,
+        account: Number.parseInt(localStorage.getItem("cash-id")),
+      },
     });
   }
 
@@ -493,17 +540,34 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       updateCash();
-      const bsCollapse = new bootstrap.Collapse(
-        document.getElementById("cash-master"),
-        {
-          toggle: false,
-        }
-      ).hide();
+      bootstrap.Modal.getInstance(cashModal).hide();
       return false;
     });
+
+    // listen for changes in cash form
+    newCashForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!newCashForm.checkValidity()) {
+        event.preventDefault(); // Prevent form submission
+        event.stopPropagation(); // Stop event propagation
+        return;
+      }
+      addCash();
+      bootstrap.Modal.getInstance(newCashModal).hide();
+      newCNameInput.value = "";
+      newOpenBalInput.value = "";
+      newOpenDateInput.value = formatDate(new Date());
+      return false;
+    });
+
     // listen for clicks on spreadsheet export button
     document.getElementById("xl-btn").addEventListener("click", () => {
-      worker.postMessage({ action: "getTransactionsXL" });
+      worker.postMessage({
+        action: "getTransactionsXL",
+        data: {
+          acc: Number.parseInt(localStorage.getItem("cash-id")),
+        },
+      });
     });
   }
 
@@ -526,15 +590,34 @@ document.addEventListener("DOMContentLoaded", function () {
    * @param {Array} data - The transactions data to export.
    */
   function exportXL(data) {
-    // Convert the data to a worksheet
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    try {
+      // Check if data is valid
+      if (!Array.isArray(data) || data.length === 0) {
+        showToast("Error", "Empty transactions", "red");
+        throw new Error(
+          "Invalid data: The data to be exported should be a non-empty array."
+        );
+      }
 
-    // Create a new workbook and append the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      // Convert the data to a worksheet
+      const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // Generate XLSX file and trigger download
-    XLSX.writeFile(workbook, `KaashBook ${cName.textContent}.xlsx`);
+      // Create a new workbook and append the worksheet
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+      // Generate XLSX file and trigger download
+      const fileName = `KaashBook ${cName.textContent}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showToast("Exported", `File ${fileName} has been saved.`, "green");
+    } catch (error) {
+      showToast("Error", "Unknown error while exporting", "green");
+      console.error(
+        "An error occurred while exporting to Excel:",
+        error.message
+      );
+    }
   }
 
   /**
@@ -544,8 +627,6 @@ document.addEventListener("DOMContentLoaded", function () {
    * @param {String} color
    */
   function showToast(title, message, color) {
-    console.log("show toast called");
-
     document.getElementById("toast-title").textContent = title;
     document.getElementById("toast-title").style.color = color;
     document.getElementById("toast-content").textContent = message;
@@ -555,6 +636,26 @@ document.addEventListener("DOMContentLoaded", function () {
     toastHTML.parentNode.replaceChild(newToast, toastHTML);
     const toast = new bootstrap.Toast(newToast);
     toast.show();
+  }
+
+  function loadAccounts(accounts) {
+    let btns = [];
+    accounts.forEach((account) => {
+      const accBtn = document.createElement("button");
+      accBtn.classList = ["btn p-1 mx-1 text-start shadow-sm"];
+      accBtn.setAttribute("type", "button");
+      accBtn.setAttribute("data-bs-dismiss", "modal");
+      accBtn.textContent = account.name;
+      accBtn.addEventListener("click", function () {
+        localStorage.setItem("cash-id", account.id);
+        updateCashForm(account);
+        refreshTransactions();
+      });
+      btns.push(accBtn);
+    });
+
+    const accountList = document.getElementById("account-list");
+    accountList.replaceChildren(...btns);
   }
 });
 
