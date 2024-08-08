@@ -92,6 +92,7 @@ self.addEventListener("message", function (event) {
         break;
       case "deleteAccount":
         deleteAccount(db, data.id);
+        deleteEntriesByID(db, data.id);
         break;
       case "getAccounts":
         getAccounts(db);
@@ -401,7 +402,7 @@ self.addEventListener("message", function (event) {
     const store = tx.objectStore(account);
     const request = store.delete(id);
     tx.oncomplete = function () {
-      self.postMessage({ action: "refresh" });
+      self.postMessage({ action: "accountChanged" });
     };
     request.onerror = function (event) {
       handleError(error.name);
@@ -579,6 +580,39 @@ self.addEventListener("message", function (event) {
     };
   }
 
+  function deleteEntriesByID(db, id) {
+    const tx = db.transaction(register, "readwrite");
+    const store = tx.objectStore(register);
+    const index = store.index(account);
+
+    // Open a cursor to iterate over matching entries
+    const request = index.openCursor(IDBKeyRange.only(id));
+
+    request.onsuccess = function (event) {
+      const cursor = event.target.result;
+      if (cursor) {
+        // Delete the entry from the object store
+        store.delete(cursor.primaryKey);
+        console.log(`Deleted entry with primaryKey: ${cursor.primaryKey}`);
+        // Continue to the next entry
+        cursor.continue();
+      } else {
+        console.log("No more entries to delete.");
+      }
+    };
+
+    request.onerror = function (event) {
+      handleError("error");
+    };
+
+    tx.oncomplete = function () {
+      self.postMessage({
+        action: "refresh",
+        data: event.target.result,
+      });
+    };
+  }
+
   function handleError(error) {
     let message = "";
     switch (error) {
@@ -598,7 +632,8 @@ self.addEventListener("message", function (event) {
         message = "An unknown error occurred.";
         break;
     }
-    self.postMessage({ action: "error", message: message });
+
+    self.postMessage({ action: "error", data: { message } });
   }
 });
 

@@ -39,9 +39,13 @@
                         data-bs-target="#account-modal" id="cash-edit-btn">
                         <i class="icon-pencil d-inline"></i>
                     </button>
-                    <button class="btn p-1 ms-1 me-2 text-start text-light" type="button" data-bs-toggle="modal"
+                    <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
                         data-bs-target="#new-account-modal" id="cash-add-btn">
                         <i class="icon-plus d-inline"></i>
+                    </button>
+                    <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
+                        data-bs-target="#dlt-acc-modal" id="cash-delete-btn" data-cash-id="">
+                        <i class="icon-trash-empty d-inline"></i>
                     </button>
                 </div>
                 <div id="cash-master" class="collapse p-1 pt-0 mt-1 mx-1">
@@ -254,10 +258,6 @@
 
                         </div>
                     </form>
-
-
-
-
                 </div>
             </div>
         </div>
@@ -327,6 +327,35 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="dlt-acc-modal" tabindex="-1" aria-labelledby="dlt-acc-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header p-2">
+                    <h1 class="modal-title fs-5" id="dlt-acc-modal-label">
+                        Modal title
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-1">
+                    <div class="mb-1">
+                        <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal"
+                            id="dlt-acc-modal-btn">
+                            Continue
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary w-100" id="modal-delete-btn"
+                            data-bs-dismiss="modal" data-cash-id="">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Toast -->

@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const newCSymbolInput = document.getElementById("new-cash-symbol");
   const newOpenBalInput = document.getElementById("new-open-bal");
   const newOpenDateInput = document.getElementById("new-open-date");
+  const cashDltBtn = document.getElementById("cash-delete-btn");
+  const cashModalDltBtn = document.getElementById("dlt-acc-modal-btn");
+  const cashDltModalLabel = document.getElementById("dlt-acc-modal-label");
 
   let mdlEditBtn = document.getElementById("modal-edit-btn");
   let mdlDltBtn = document.getElementById("modal-delete-btn");
@@ -199,6 +202,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Listen for messages from the worker
   worker.onmessage = function (event) {
+    console.trace();
+
     const { action, data } = event.data;
 
     switch (action) {
@@ -216,6 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
         break;
       case "accountChanged":
         worker.postMessage({ action: "getAccounts" });
+        refreshTransactions();
         break;
       case "updateAccounts":
         refreshTransactions();
@@ -569,6 +575,21 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       });
     });
+
+    //
+    cashModalDltBtn.addEventListener("click", function () {
+      const id = Number.parseInt(this.getAttribute("data-cash-id"));
+      if (id != 1) {
+        worker.postMessage({
+          action: "deleteAccount",
+          data: {
+            id,
+          },
+        });
+        localStorage.setItem("cash-id", 1);
+        setAccDeletable();
+      }
+    });
   }
 
   setupEventListeners();
@@ -650,6 +671,12 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem("cash-id", account.id);
         updateCashForm(account);
         refreshTransactions();
+        console.log("account id is " + account.id);
+        setAccDeletable();
+        if (account.id != 1) {
+          cashDltModalLabel.textContent = `Delete ${account.name} and all it's transactions?`;
+          cashModalDltBtn.setAttribute("data-cash-id", account.id);
+        }
       });
       btns.push(accBtn);
     });
@@ -657,6 +684,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const accountList = document.getElementById("account-list");
     accountList.replaceChildren(...btns);
   }
+
+  function setAccDeletable() {
+    if (localStorage.getItem("cash-id") == 1) {
+      cashDltBtn.classList.add("d-none");
+    } else {
+      cashDltBtn.classList.remove("d-none");
+    }
+  }
+  setAccDeletable();
 });
 
 /**
