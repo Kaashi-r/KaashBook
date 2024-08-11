@@ -95,8 +95,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  fromDate.value = localStorage.getItem("from-date") || formatDate(aWeekAgo);
-  toDate.value = localStorage.getItem("to-date") || formatDate(today);
+  // Date filtering default restrictions set
+
+  function setPrimaryDates() {
+    let fr = localStorage.getItem("from-date") || formatDate(aWeekAgo);
+    let to = localStorage.getItem("to-date") || formatDate(today);
+    fromDate.value = fr;
+    toDate.value = to;
+    fromDate.setAttribute("max", to);
+    toDate.setAttribute("min", fr);
+  }
+
+  setPrimaryDates();
 
   /**
    * Renders the list of transactions into the table.
@@ -499,7 +509,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Keyboard shortcut to toggle between Receipt and Payment
     document.addEventListener("keydown", function (event) {
-      if (event.ctrlKey && event.shiftKey && event.key === "+") {
+      if (event.ctrlKey && event.key === " ") {
         event.preventDefault(); // Prevent the default action
         let xx = pymt.checked;
 
@@ -558,7 +568,7 @@ document.addEventListener("DOMContentLoaded", function () {
       addCash();
       bootstrap.Modal.getInstance(newCashModal).hide();
       newCNameInput.value = "";
-      newOpenBalInput.value = "";
+      newOpenBalInput.value = 0;
       newOpenDateInput.value = formatDate(new Date());
       newCashForm.classList = ["needs-validation"];
       return false;
@@ -576,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //
     cashModalDltBtn.addEventListener("click", function () {
-      const id = Number.parseInt(this.getAttribute("data-cash-id"));
+      const id = Number.parseInt(localStorage.getItem("cash-id"));
       if (id != 1) {
         worker.postMessage({
           action: "deleteAccount",

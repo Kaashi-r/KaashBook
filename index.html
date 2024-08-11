@@ -32,20 +32,22 @@
                 <hr class="p-0 m-1 text-light" />
                 <div class="d-flex gap-1">
                     <button class="btn p-1 mx-1 text-start text-light flex-fill" type="button" data-bs-toggle="modal"
-                        data-bs-target="#account-list-modal" data-bs-dismiss="collapse" id="cash-collapse-btn">
+                        data-bs-target="#account-list-modal" data-bs-dismiss="collapse" id="cash-collapse-btn"
+                        title="Select Account">
                         <h5 class="m-0 d-inline" id="the-cash">Cashbook</h5>
 
                     </button>
                     <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
-                        data-bs-target="#account-modal" id="cash-edit-btn">
+                        data-bs-target="#account-modal" id="cash-edit-btn" title="Edit Account">
                         <i class="icon-pencil d-inline"></i>
                     </button>
                     <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
-                        data-bs-target="#new-account-modal" id="cash-add-btn">
+                        data-bs-target="#new-account-modal" id="cash-add-btn" title="New Account">
                         <i class="icon-plus d-inline"></i>
                     </button>
                     <button class="btn p-1 mx-1 text-start text-light" type="button" data-bs-toggle="modal"
-                        data-bs-target="#dlt-acc-modal" id="cash-delete-btn" data-cash-id="">
+                        data-bs-target="#dlt-acc-modal" id="cash-delete-btn" data-cash-id=""
+                        title="Delete This Account">
                         <i class="icon-trash-empty d-inline"></i>
                     </button>
                 </div>
@@ -57,7 +59,7 @@
                     <div class="d-grid gap-2">
                         <button class="btn mx-1 p-1 text-start text-light mb-1 d-flex" type="button"
                             data-bs-toggle="collapse" data-bs-target="#user-master" aria-expanded="false"
-                            aria-controls="user-master" id="user-collapse-btn">
+                            aria-controls="user-master" id="user-collapse-btn" title="Edit User">
                             <h6 class="m-0 d-inline flex-fill" id="the-user">User</h6>
                             <i class="icon-pencil d-inline"></i>
                         </button>
@@ -87,7 +89,8 @@
                     <form id="entry-form" data-id="" class="needs-validation" novalidate>
                         <h4 class="mt-2 mx-1">Enter transaction details</h4>
                         <div class="card mb-1 border-0 col-md-6 col-12">
-                            <div id="types-group" class="btn-group" role="group">
+                            <div id="types-group" class="btn-group" role="group"
+                                title="Try 'Ctrl' + 'Spacebar' to change">
                                 <input type="radio" class="btn-check mr-1" name="types" id="rcpt" value="receipt"
                                     checked />
                                 <label class="btn btn-outline-success" for="rcpt">Receipt</label>
@@ -98,7 +101,8 @@
                         </div>
                         <div class="input-group mb-1">
                             <span class="input-group-text">Date :</span>
-                            <input class="form-control" type="date" id="date" min="1970-01-01" autofocus />
+                            <input class="form-control" type="date" id="date" min="1970-01-01" autofocus
+                                title="Use '+' and '-' keys when date input is selected to change dates" />
                             <div class="invalid-feedback">
                                 Please choose the date of transaction.
                             </div>
@@ -139,7 +143,7 @@
                         </h5>
                     </div>
                     <div>
-                        <button class="btn p-1 shadow-sm m-1" id="xl-btn">
+                        <button class="btn p-1 shadow-sm m-1" id="xl-btn" title="Export as spreadsheet">
                             <i class="icon-table"></i>
                         </button>
                     </div>
@@ -193,7 +197,7 @@
                 <div class="modal-content">
                     <div class="modal-header p-2">
                         <h1 class="modal-title fs-5" id="edit-modal-label">
-                            Modal title
+                            Edit Transaction
                         </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -271,7 +275,7 @@
             <div class="modal-content">
                 <div class="modal-header p-2">
                     <h1 class="modal-title fs-5" id="new-account-modal-label">
-                        Edit Account
+                        Add new account
                     </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -336,7 +340,7 @@
             <div class="modal-content">
                 <div class="modal-header p-2">
                     <h1 class="modal-title fs-5" id="dlt-acc-modal-label">
-                        Modal title
+                        Delete Account
                     </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
