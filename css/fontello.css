@@ -1,11 +1,11 @@
 @font-face {
   font-family: 'fontello';
-  src: url('../font/fontello.eot?26099811');
-  src: url('../font/fontello.eot?26099811#iefix') format('embedded-opentype'),
-       url('../font/fontello.woff2?26099811') format('woff2'),
-       url('../font/fontello.woff?26099811') format('woff'),
-       url('../font/fontello.ttf?26099811') format('truetype'),
-       url('../font/fontello.svg?26099811#fontello') format('svg');
+  src: url('../font/fontello.eot?97169445');
+  src: url('../font/fontello.eot?97169445#iefix') format('embedded-opentype'),
+       url('../font/fontello.woff2?97169445') format('woff2'),
+       url('../font/fontello.woff?97169445') format('woff'),
+       url('../font/fontello.ttf?97169445') format('truetype'),
+       url('../font/fontello.svg?97169445#fontello') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -15,7 +15,7 @@
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   @font-face {
     font-family: 'fontello';
-    src: url('../font/fontello.svg?26099811#fontello') format('svg');
+    src: url('../font/fontello.svg?97169445#fontello') format('svg');
   }
 }
 */
@@ -71,12 +71,24 @@
 .icon-bookmark-empty:before { content: '\f097'; } /* '' */
 .icon-twitter:before { content: '\f099'; } /* '' */
 .icon-facebook:before { content: '\f09a'; } /* '' */
+.icon-github-circled:before { content: '\f09b'; } /* '' */
 .icon-menu:before { content: '\f0c9'; } /* '' */
 .icon-table:before { content: '\f0ce'; } /* '' */
 .icon-money:before { content: '\f0d6'; } /* '' */
+.icon-sort-down:before { content: '\f0dd'; } /* '' */
 .icon-mail-alt:before { content: '\f0e0'; } /* '' */
 .icon-bank:before { content: '\f19c'; } /* '' */
+.icon-reddit:before { content: '\f1a1'; } /* '' */
+.icon-database:before { content: '\f1c0'; } /* '' */
+.icon-paypal:before { content: '\f1ed'; } /* '' */
+.icon-cc-stripe:before { content: '\f1f5'; } /* '' */
+.icon-at:before { content: '\f1fa'; } /* '' */
 .icon-user-plus:before { content: '\f234'; } /* '' */
 .icon-hourglass-1:before { content: '\f251'; } /* '' */
+.icon-chrome:before { content: '\f268'; } /* '' */
+.icon-firefox:before { content: '\f269'; } /* '' */
 .icon-reddit-alien:before { content: '\f281'; } /* '' */
+.icon-user-circle:before { content: '\f2bd'; } /* '' */
+.icon-telegram:before { content: '\f2c6'; } /* '' */
+.icon-linkedin-squared:before { content: '\f30c'; } /* '' */
 .icon-linkedin:before { content: '\f318'; } /* '' */

@@ -53,6 +53,7 @@ self.addEventListener("message", function (event) {
 
   openRequest.onsuccess = function (event) {
     db = event.target.result;
+    console.log(action);
 
     switch (action) {
       case "addTransaction":
@@ -115,6 +116,7 @@ self.addEventListener("message", function (event) {
   };
 
   function addTransaction(db, transaction) {
+    console.log("adding transaction");
     const tx = db.transaction(register, "readwrite");
     const store = tx.objectStore(register);
     const request = store.add(transaction);
@@ -201,22 +203,7 @@ self.addEventListener("message", function (event) {
       range = null;
     }
 
-    if (acc !== "") {
-      // Filter by registerName
-
-      if (range) {
-        request = regIndex.openCursor(IDBKeyRange.only(acc));
-      } else {
-        request = regIndex.openCursor();
-      }
-
-      // request = range
-      //   ? regIndex.openCursor(IDBKeyRange.only(register))
-      //   : store.openCursor(); // You might need to adjust this line if the index should be used for both date and registerName.
-    } else {
-      // No register filter applied
-      request = range ? dateIndex.openCursor(range) : dateIndex.openCursor();
-    }
+    request = range ? dateIndex.openCursor(range) : dateIndex.openCursor();
 
     // Create a range for date strings
 
@@ -226,7 +213,9 @@ self.addEventListener("message", function (event) {
       const cursor = event.target.result;
       if (cursor) {
         //
-        transactions.push(cursor.value); // Add current cursor value to transactions array
+        const transaction = cursor.value;
+
+        if (transaction.account == acc) transactions.push(cursor.value); // Add current cursor value to transactions array
         cursor.continue(); // Continue to the next cursor entry
       } else {
         // Process transactions after cursor iteration is complete
@@ -363,37 +352,78 @@ self.addEventListener("message", function (event) {
     };
   }
 
+  function getOpenBalID(db, accID) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(register, "readonly");
+      const store = tx.objectStore(register);
+      const regIndex = store.index("account");
+
+      const request = regIndex.openCursor(IDBKeyRange.only(accID));
+
+      request.onsuccess = function (event) {
+        const cursor = event.target.result;
+        if (cursor) {
+          const transaction = cursor.value;
+
+          if (transaction.description === "Opening balance") {
+            console.log("primary key is " + cursor.primaryKey);
+            resolve(cursor.primaryKey);
+            return; // Exit the function after resolving
+          }
+
+          cursor.continue(); // Continue to the next cursor entry
+        } else {
+          // No more records, resolve with null if not found
+          resolve(null);
+        }
+      };
+
+      request.onerror = function (event) {
+        reject(event.target.error);
+      };
+    });
+  }
+
   function updateAccount(db, a) {
+    console.log("updating account");
     const tx = db.transaction(account, "readwrite");
     const store = tx.objectStore(account);
     let acc = store.put(a);
     tx.oncomplete = function () {
+      console.log("tx complete");
       self.postMessage({ action: "accountChanged" });
     };
     acc.onerror = function (event) {
       handleError(error.name);
     };
     acc.onsuccess = function (event) {
-      const id = 1;
-      const account = event.target.result;
-      const amount = a.openBal * 1000;
-      const date = a.openDate;
-      const byUser = a.users[0];
-      const added = new Date();
-      const modified = new Date();
-      const description = "Opening balance";
+      console.log("getting account id");
+      console.log("account id is " + a.id);
+      getOpenBalID(db, a.id)
+        .then((openBalID) => {
+          console.log("account id is " + openBalID);
+          const id = openBalID;
+          const account = event.target.result;
+          const amount = a.openBal * 1000;
+          const date = a.openDate;
+          const byUser = a.users[0];
+          const added = new Date();
+          const modified = new Date();
+          const description = "Opening balance";
 
-      updateTransaction(db, {
-        id,
-        amount,
-        date,
-        account,
-        description,
-        editable: false,
-        byUser,
-        added,
-        modified,
-      });
+          updateTransaction(db, {
+            id,
+            amount,
+            date,
+            account,
+            description,
+            editable: false,
+            byUser,
+            added,
+            modified,
+          });
+        })
+        .catch((error) => handleError(error));
     };
   }
 
@@ -593,7 +623,6 @@ self.addEventListener("message", function (event) {
       if (cursor) {
         // Delete the entry from the object store
         store.delete(cursor.primaryKey);
-        console.log(`Deleted entry with primaryKey: ${cursor.primaryKey}`);
         // Continue to the next entry
         cursor.continue();
       } else {
@@ -632,6 +661,7 @@ self.addEventListener("message", function (event) {
         message = "An unknown error occurred.";
         break;
     }
+    console.log(error);
 
     self.postMessage({ action: "error", data: { message } });
   }

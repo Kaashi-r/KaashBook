@@ -202,8 +202,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Listen for messages from the worker
   worker.onmessage = function (event) {
-    console.trace();
-
     const { action, data } = event.data;
 
     switch (action) {
@@ -224,10 +222,9 @@ document.addEventListener("DOMContentLoaded", function () {
         refreshTransactions();
         break;
       case "updateAccounts":
+        if (data.length === 1) localStorage.setItem("cash-id", 1);
         refreshTransactions();
         loadAccounts(data);
-        console.log(localStorage.getItem("cash-id"));
-        console.log(data);
         updateCashForm(
           data.find(
             (a) => a["id"] === Number.parseInt(localStorage.getItem("cash-id"))
@@ -383,6 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
     openBalInput.value = data.openBal;
     openDateInput.value = data.openDate;
     cashForm.setAttribute("data-cash-id", data.id);
+    console.log("cash id set as " + cashForm.getAttribute("data-cash-id"));
     cashBtn.textContent = data.name;
     cName.textContent = data.name + " Transactions";
 
@@ -415,6 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
    * Updates the cash in the database.
    */
   function updateCash() {
+    console.log("updating");
     worker.postMessage({
       action: "updateAccount",
       data: {
@@ -563,6 +562,7 @@ document.addEventListener("DOMContentLoaded", function () {
       newCNameInput.value = "";
       newOpenBalInput.value = "";
       newOpenDateInput.value = formatDate(new Date());
+      newCashForm.classList = ["needs-validation"];
       return false;
     });
 
@@ -589,6 +589,18 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem("cash-id", 1);
         setAccDeletable();
       }
+    });
+
+    document.getElementById("kb-banner").addEventListener("click", function () {
+      const profileModal = document.getElementById("profile-moodal");
+      // new bootstrap.Modal(profileModal).show();
+    });
+    // Date range problem solved
+    fromDate.addEventListener("change", function () {
+      toDate.setAttribute("min", fromDate.value);
+    });
+    toDate.addEventListener("change", function () {
+      fromDate.setAttribute("max", toDate.value);
     });
   }
 
@@ -661,6 +673,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function loadAccounts(accounts) {
     let btns = [];
+
     accounts.forEach((account) => {
       const accBtn = document.createElement("button");
       accBtn.classList = ["btn p-1 mx-1 text-start shadow-sm"];
@@ -671,7 +684,6 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem("cash-id", account.id);
         updateCashForm(account);
         refreshTransactions();
-        console.log("account id is " + account.id);
         setAccDeletable();
         if (account.id != 1) {
           cashDltModalLabel.textContent = `Delete ${account.name} and all it's transactions?`;

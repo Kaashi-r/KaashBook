@@ -18,7 +18,8 @@
             <div class="row justify-content-between">
                 <div class="col-8 text-start">
                     <img class="img-fluid p-1 m-1" src="icons/KaashBook-Banner.png" alt="KaashBook Logo"
-                        style="max-height: 40px" />
+                        style="max-height: 40px" id="kb-banner" data-bs-toggle="modal" data-bs-target="#profile-modal"
+                        type="button" />
                 </div>
                 <div class="col-4 text-end">
                     <button class="btn mx-2 my-1 text-light" type="button" data-bs-toggle="collapse"
@@ -356,7 +357,32 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="profile-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-body d-grid">
+                    <div class="text-center mt-2">
+                        <img src="icons/KaashBookLogoAddon128.png" class="rounded-circle" alt="img" height="64"
+                            width="64">
+                    </div>
+                    <h3>KaashBook</h3>
+                    <p>
+                        A simple offline cashbook extension to keep your daily transactions, within your browser!.
+                    </p>
+                    <p>
+                        You can support us here:
+                    </p>
+                    <a href="https://github.com/Kaashi-r/KaashBook" target="_blank">
+                        <button type="button" class="btn btn-light">Github <i class="icon-github-circled"></i></button>
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
+
 
     <!-- Toast -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
