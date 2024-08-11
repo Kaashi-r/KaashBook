@@ -53,7 +53,6 @@ self.addEventListener("message", function (event) {
 
   openRequest.onsuccess = function (event) {
     db = event.target.result;
-    console.log(action);
 
     switch (action) {
       case "addTransaction":
@@ -116,7 +115,6 @@ self.addEventListener("message", function (event) {
   };
 
   function addTransaction(db, transaction) {
-    console.log("adding transaction");
     const tx = db.transaction(register, "readwrite");
     const store = tx.objectStore(register);
     const request = store.add(transaction);
@@ -366,7 +364,6 @@ self.addEventListener("message", function (event) {
           const transaction = cursor.value;
 
           if (transaction.description === "Opening balance") {
-            console.log("primary key is " + cursor.primaryKey);
             resolve(cursor.primaryKey);
             return; // Exit the function after resolving
           }
@@ -385,23 +382,18 @@ self.addEventListener("message", function (event) {
   }
 
   function updateAccount(db, a) {
-    console.log("updating account");
     const tx = db.transaction(account, "readwrite");
     const store = tx.objectStore(account);
     let acc = store.put(a);
     tx.oncomplete = function () {
-      console.log("tx complete");
       self.postMessage({ action: "accountChanged" });
     };
     acc.onerror = function (event) {
       handleError(error.name);
     };
     acc.onsuccess = function (event) {
-      console.log("getting account id");
-      console.log("account id is " + a.id);
       getOpenBalID(db, a.id)
         .then((openBalID) => {
-          console.log("account id is " + openBalID);
           const id = openBalID;
           const account = event.target.result;
           const amount = a.openBal * 1000;
@@ -625,8 +617,6 @@ self.addEventListener("message", function (event) {
         store.delete(cursor.primaryKey);
         // Continue to the next entry
         cursor.continue();
-      } else {
-        console.log("No more entries to delete.");
       }
     };
 

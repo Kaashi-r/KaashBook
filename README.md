@@ -12,14 +12,16 @@ A simple offline cashbook extension to keep your daily transactions, within your
 
 2. Navigate to the project directory.
 
-3. Open `index.html` in your preferred web browser, in a local server preferrably.
+3. Open `index.html` with your web browser, in a local server preferrably.
+   OR
+   Open "about:debugging#/runtime/this-firefox" and load the manifest.json file
 
 ## Usage
 
 - Enter transactions using the form provided.
 - View and manage transactions in the transaction table section.
 - Delete or modify each transaction after clicking on the entry.
-- Created in a way to support multiple users and cash accounts. Not implemented yet.
+- Supports multiple cash accounts.
 - Export transactions to .xlsx format.
 
 ## License

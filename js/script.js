@@ -380,7 +380,6 @@ document.addEventListener("DOMContentLoaded", function () {
     openBalInput.value = data.openBal;
     openDateInput.value = data.openDate;
     cashForm.setAttribute("data-cash-id", data.id);
-    console.log("cash id set as " + cashForm.getAttribute("data-cash-id"));
     cashBtn.textContent = data.name;
     cName.textContent = data.name + " Transactions";
 
@@ -413,7 +412,6 @@ document.addEventListener("DOMContentLoaded", function () {
    * Updates the cash in the database.
    */
   function updateCash() {
-    console.log("updating");
     worker.postMessage({
       action: "updateAccount",
       data: {
