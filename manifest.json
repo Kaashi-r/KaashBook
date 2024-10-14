@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "KaashBook",
-  "version": "1.1",
+  "version": "1.2",
   "description": "A simple offline cashbook extension to keep your daily transactions, within your browser!.",
   "permissions": ["storage", "tabs", "unlimitedStorage"],
   "background": {
