@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const fromDate = document.getElementById("from-date");
   const toDate = document.getElementById("to-date");
   const fromToForm = document.getElementById("from-to-form");
+  const themeBtn = document.getElementById("theme-btn");
+  const themeLogo = document.getElementById("theme-logo");
 
   const newCashForm = document.getElementById("new-cash-form");
   const newCashModal = document.getElementById("new-account-modal");
@@ -610,6 +612,16 @@ document.addEventListener("DOMContentLoaded", function () {
     toDate.addEventListener("change", function () {
       fromDate.setAttribute("max", toDate.value);
     });
+
+    themeBtn.addEventListener("click", function () {
+      if (isDarkModeSelected()) {
+        localStorage.setItem("dark-mode", false);
+      } else {
+        localStorage.setItem("dark-mode", true);
+      }
+      setTheme();
+      console.log(localStorage);
+    });
   }
 
   setupEventListeners();
@@ -713,6 +725,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   setAccDeletable();
+
+  function isDarkModeSelected() {
+    localStorage.getItem("dark-mode") ||
+      localStorage.setItem("dark-mode", false);
+
+    return localStorage.getItem("dark-mode") === "true";
+  }
+
+  function setTheme() {
+    if (isDarkModeSelected()) {
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+      themeLogo.classList = ["icon-sun"];
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", "light");
+      themeLogo.classList = ["icon-moon"];
+    }
+  }
+  setTheme();
 });
 
 /**
